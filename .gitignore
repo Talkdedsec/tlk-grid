@@ -1,0 +1,9 @@
+/target
+**/target
+/dist
+node_modules
+*.pdb
+*.ilk
+*.exp
+Thumbs.db
+/uygulama/gen
