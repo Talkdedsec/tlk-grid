@@ -302,6 +302,9 @@ input:focus, select:focus { border-color: var(--accent-soft); }
 
 /* ---------- result + apply ---------- */
 
+/* `display` on the base rule would beat the browser's [hidden] default. */
+.result[hidden] { display: none; }
+
 .result {
   display: inline-block;
   margin-top: 10px;
@@ -377,3 +380,46 @@ input:focus, select:focus { border-color: var(--accent-soft); }
   .canvas { flex-direction: column; align-items: stretch; }
   .card, .add-card { flex: 0 0 auto; width: 100%; }
 }
+
+/* ---------- binds ---------- */
+
+.bind {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.bind + .bind { margin-top: 8px; }
+
+.bind-action {
+  flex: 0 0 82px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--dim);
+}
+
+.bind-key {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 9px;
+  background: var(--input);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.bind-key:hover { border-color: var(--accent-soft); }
+.bind-key[data-empty="true"] { color: var(--faint); font-size: 11px; }
+.bind-key[data-capturing="true"] { border-color: var(--accent); color: var(--accent); }
+
+.bind-mode { flex: 0 0 76px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; }
+
+/* A bind that is currently engaged reads at a glance during play. */
+.bind[data-engaged="true"] .bind-key { border-color: var(--accent); color: var(--accent); }
+.bind[data-engaged="true"] .bind-action { color: var(--accent-text); }

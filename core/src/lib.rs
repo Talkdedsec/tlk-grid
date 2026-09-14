@@ -7,9 +7,11 @@
 //! `layout` is pure arithmetic and carries the test suite; everything else wraps
 //! a platform call and is compiled on Windows only.
 
+pub mod bind;
 pub mod display;
 pub mod error;
 pub mod frame;
+pub mod input;
 pub mod layout;
 pub mod target;
 
