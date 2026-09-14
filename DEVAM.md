@@ -47,6 +47,21 @@ geri al / Çıkış), kapatınca tepsiye inme, tek dosya 8.4 MB exe.
 - `frame.rs` — gölge payı düzeltmeli `place`, kenarlıksız stil soyma, `capture` /
   `restore` çifti.
 
+**Faz 2 — bitti.**
+- `bind.rs` — tetikleyici (tuş / fare, M4-M5 dahil), hold/toggle, eylem kümesi,
+  VK adlandırma. Saf veri, testli.
+- `input.rs` — `WH_KEYBOARD_LL` + `WH_MOUSE_LL` + `SetWinEventHook`, hepsi tek
+  ipliğin kendi mesaj döngüsünde. Karar mantığı (`decide`, `decide_wheel`)
+  Win32'den ayrı tutuldu; 11 test sistem girdisi üretmeden kuralları doğruluyor.
+- `app/hotkeys.rs` — hook ipliğinden gelen olayları alıp pencereye dokunan taraf.
+- Arayüz: kart içinde KISAYOLLAR bölümü, tıkla-bas bağlama alanı, temizleme,
+  HOLD/TOGGLE anahtarı; araç çubuğunda tekerlek ve ana denetim düğmeleri gerçek
+  anahtar oldu.
+
+Kurallar: bağlanan tuş yalnız hedef pencere öndeyken yutulur; ana denetim ve F8
+her yerde çalışır ve tuşu **asla** yutmaz; tekerlek en son basılan bağlamayı
+ayarlar; tuş tekrarı eylemi bir kez tetikler.
+
 **Faz 3 — bitti.** Ürünün kalbi çalışıyor.
 - `core/overlay.rs` — tıklama geçiren, odak almayan, en üstte duran overlay
   penceresi kendi ipliğinde; `DwmRegisterThumbnail` ile kaynağın canlı kopyası,
@@ -62,21 +77,6 @@ Yöntemler: **THUMBNAIL** oyuna hiç dokunmaz — maç sırasında bağlı bıra
 olan bu. **WINDOW** gerçek pencereyi ekran dışına taşırır, bırakınca geri koyar.
 **STRETCH** pencereyi monitörü dolduracak şekilde gerer. **DPI** çalışan bir
 sürece uygulanamıyor; arayüz bunu yazıyor, taklit etmiyor.
-
-**Faz 2 — bitti.**
-- `bind.rs` — tetikleyici (tuş / fare, M4-M5 dahil), hold/toggle, eylem kümesi,
-  VK adlandırma. Saf veri, testli.
-- `input.rs` — `WH_KEYBOARD_LL` + `WH_MOUSE_LL` + `SetWinEventHook`, hepsi tek
-  ipliğin kendi mesaj döngüsünde. Karar mantığı (`decide`, `decide_wheel`)
-  Win32'den ayrı tutuldu; 11 test sistem girdisi üretmeden kuralları doğruluyor.
-- `app/hotkeys.rs` — hook ipliğinden gelen olayları alıp pencereye dokunan taraf.
-- Arayüz: kart içinde KISAYOLLAR bölümü, tıkla-bas bağlama alanı, temizleme,
-  HOLD/TOGGLE anahtarı; araç çubuğunda tekerlek ve ana denetim düğmeleri gerçek
-  anahtar oldu.
-
-Kurallar: bağlanan tuş yalnız hedef pencere öndeyken yutulur; ana denetim ve F8
-her yerde çalışır ve tuşu **asla** yutmaz; tekerlek en son basılan bağlamayı
-ayarlar; tuş tekrarı eylemi bir kez tetikler.
 
 ## Neyin kanıtı var
 
