@@ -6,6 +6,7 @@ use tlkgrid_core::frame::{self, Border};
 use tlkgrid_core::input::Input;
 use tlkgrid_core::layout::{self, Anchor, AspectPreset, Cell, Rect};
 use tlkgrid_core::target::{self, TargetWindow};
+use tlkgrid_core::zoom::{self, Method};
 
 use crate::locale;
 use crate::session::Session;
@@ -209,4 +210,38 @@ pub fn trigger_label(trigger: Trigger) -> String {
 #[tauri::command]
 pub fn key_name(vk: u32) -> String {
     key_label(vk)
+}
+
+// -------------------------------------------------------------------- zoom
+
+/// What the Resize bind will do for this window. Sent whenever the factor
+/// field, the method switch or the borderless box changes.
+#[tauri::command]
+pub fn set_zoom(
+    session: State<'_, Session>,
+    handle: isize,
+    factor: String,
+    method: Method,
+    borderless: bool,
+) -> Answer<f64> {
+    let parsed = layout::parse_zoom(&factor).ok_or_else(|| "not a number".to_string())?;
+    let border = if borderless {
+        Border::Borderless
+    } else {
+        Border::Keep
+    };
+    session.set_zoom(handle, parsed, method, border);
+    Ok(parsed)
+}
+
+/// The ×1.25 / ×1.5 / ×2 buttons beside the result readout.
+#[tauri::command]
+pub fn zoom_shortcuts() -> [f64; 3] {
+    zoom::SHORTCUTS
+}
+
+/// Where the magnified copy would land, for the `Result:` line.
+#[tauri::command]
+pub fn zoom_destination(base: Rect, factor: f64) -> Rect {
+    zoom::destination(base, factor)
 }

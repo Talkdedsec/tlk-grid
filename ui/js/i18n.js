@@ -77,6 +77,18 @@ const en = {
   "binds.toggle": "TOGGLE",
   "binds.factor": "Factor",
 
+  "zoom.method": "Zoom method",
+  "zoom.note.thumbnail":
+    "Mirrors the window onto an overlay and magnifies that. The game is never moved or told anything, so this is the one to leave bound during a match.",
+  "zoom.note.window":
+    "Moves the real window past the screen edge while the bind is held, then puts it back. The game keeps rendering at its own resolution.",
+  "zoom.note.stretch":
+    "Stretches the real window to fill the monitor while the bind is held.",
+  "zoom.note.dpi":
+    "Per-application DPI scaling is a compatibility flag Windows reads when a program starts. It cannot be turned on mid-game, so this bind does nothing until the game is restarted.",
+  "zoom.factorTitle": "Zoom factor, 0.01× to 64×",
+  "status.factorSet": "Factor {factor}×.",
+
   "layout.pin": "Hold the layout through Alt-Tab",
 
   "status.bindSet": "{action} bound to {key}.",
@@ -167,6 +179,18 @@ const tr = {
   "binds.hold": "BASILI",
   "binds.toggle": "AÇ/KAPA",
   "binds.factor": "Katsayı",
+
+  "zoom.method": "Büyütme yöntemi",
+  "zoom.note.thumbnail":
+    "Pencereyi bir overlay'e yansıtıp onu büyütür. Oyun ne oynatılır ne de haberi olur; maç sırasında bağlı bırakılacak olan bu.",
+  "zoom.note.window":
+    "Bağlama basılıyken gerçek pencereyi ekran kenarının dışına taşırır, bırakınca geri koyar. Oyun kendi çözünürlüğünde render etmeye devam eder.",
+  "zoom.note.stretch":
+    "Bağlama basılıyken gerçek pencereyi monitörü dolduracak şekilde gerer.",
+  "zoom.note.dpi":
+    "Uygulama başına DPI ölçekleme, Windows'un program açılırken okuduğu bir uyumluluk bayrağı. Oyun çalışırken açılamaz, bu yüzden oyun yeniden başlatılana kadar bu bağlama bir şey yapmaz.",
+  "zoom.factorTitle": "Büyütme katsayısı, 0,01× – 64×",
+  "status.factorSet": "Katsayı {factor}×.",
 
   "layout.pin": "Alt-Tab sonrası yerleşimi koru",
 
