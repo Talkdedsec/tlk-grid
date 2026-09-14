@@ -7,9 +7,9 @@ change size.
 
 Open source, Windows only. [Türkçe](README.tr.md)
 
-> **Status: early.** Window discovery, monitor detection, layout and placement
-> work. Zoom, overlays, CurveFX and SQUASH are on the roadmap below and are not
-> in the build yet.
+> **Status: early.** Window discovery, monitor detection, layout, placement and
+> hotkeys work. Zoom, overlays, CurveFX and SQUASH are on the roadmap below and
+> are not in the build yet.
 
 ## What it does
 
@@ -20,8 +20,14 @@ Open source, Windows only. [Türkçe](README.tr.md)
   resolution.
 - **Multiple instances** — two copies of the same game are told apart by their
   window handle and process id, and numbered `#1 #2 #3`.
+- **Hotkeys that behave** — bind a key or a mouse side button; the bind only
+  fires while the target window is in front, and the key is held back from the
+  game. The master switch suspends it without opening the app, and neither the
+  master bind nor F8 ever eats its key.
+- **Hold the layout** — pin a window and its layout is re-asserted when the game
+  moves it back on Alt-Tab.
 - **Put it back** — F8 restores every window tlk-grid has touched to the style
-  and rect it had before.
+  and rect it had before, from anywhere.
 
 ## How it works
 
@@ -63,8 +69,8 @@ cargo build --release           # target/release/tlk-grid.exe, one file
 | --- | --- | --- |
 | 0 | Shell, tray, single-file build | done |
 | 1 | Target discovery, monitors, layout, placement, F8 | done |
-| 2 | Hotkeys: low-level hook, hold/toggle, master bypass, Alt-Tab guard | next |
-| 3 | Thumbnail zoom, window/stretch/DPI methods, wheel factor | |
+| 2 | Hotkeys: low-level hook, hold/toggle, master bypass, Alt-Tab guard | done |
+| 3 | Thumbnail zoom, window/stretch/DPI methods, wheel factor | next |
 | 4 | Black bars, custom overlays, crosshair, scope lens, HUD layers | |
 | 5 | CurveFX: curved screen, CRT, four motion-blur modes | |
 | 6 | SQUASH: NvAPI custom display modes | |

@@ -7,9 +7,9 @@ değiştirir.
 
 Açık kaynak, yalnız Windows. [English](README.md)
 
-> **Durum: erken.** Pencere keşfi, monitör tespiti, yerleşim ve konumlandırma
-> çalışıyor. Zoom, katmanlar, CurveFX ve SQUASH aşağıdaki yol haritasında;
-> henüz derlemede yok.
+> **Durum: erken.** Pencere keşfi, monitör tespiti, yerleşim, konumlandırma ve
+> kısayollar çalışıyor. Zoom, katmanlar, CurveFX ve SQUASH aşağıdaki yol
+> haritasında; henüz derlemede yok.
 
 ## Ne yapar
 
@@ -20,8 +20,13 @@ Açık kaynak, yalnız Windows. [English](README.md)
   çözünürlüğünü korur.
 - **Çoklu instance** — aynı oyunun iki kopyası pencere tanıtıcısı ve süreç
   kimliğiyle ayrılır, `#1 #2 #3` diye numaralanır.
+- **Düzgün davranan kısayollar** — bir tuşa ya da farenin yan düğmesine bağla;
+  bağlama yalnız hedef pencere öndeyken tetiklenir ve tuş oyuna geçmez. Ana
+  denetim, uygulamayı açmadan bunu askıya alır; ne ana denetim ne de F8 tuşu yutar.
+- **Yerleşimi tutar** — pencereyi sabitlersen, oyun Alt-Tab sonrası geri
+  oynattığında yerleşim yeniden dayatılır.
 - **Geri alır** — F8, tlk-grid'in dokunduğu her pencereyi eski stiline ve
-  konumuna döndürür.
+  konumuna döndürür; her yerden çalışır.
 
 ## Nasıl çalışır
 
@@ -63,8 +68,8 @@ cargo build --release           # target/release/tlk-grid.exe, tek dosya
 | --- | --- | --- |
 | 0 | Kabuk, tepsi, tek dosya derleme | bitti |
 | 1 | Hedef keşfi, monitörler, yerleşim, konumlandırma, F8 | bitti |
-| 2 | Kısayollar: düşük seviye hook, hold/toggle, master bypass, Alt-Tab nöbeti | sırada |
-| 3 | Thumbnail zoom, window/stretch/DPI yöntemleri, tekerlekle faktör | |
+| 2 | Kısayollar: düşük seviye hook, hold/toggle, master bypass, Alt-Tab nöbeti | bitti |
+| 3 | Thumbnail zoom, window/stretch/DPI yöntemleri, tekerlekle faktör | sırada |
 | 4 | Siyah bantlar, özel overlay'ler, nişangâh, dürbün lensi, HUD katmanları | |
 | 5 | CurveFX: kavisli ekran, CRT, dört motion blur modu | |
 | 6 | SQUASH: NvAPI özel ekran modları | |

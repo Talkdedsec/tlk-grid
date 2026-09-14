@@ -13,7 +13,7 @@ https://claude.ai/code/artifact/1a4d2e32-785c-4d8c-a57b-b0c30ddbf11a
 | Konu | Karar | Neden |
 | --- | --- | --- |
 | Stack | Rust + Tauri 2 + WebView2 | Kaynak uygulamanın arayüzü de WebView2/HTML; aynı motorla UI/UX birebir tutturuluyor. Tek 8 MB exe, .NET bağımlılığı yok. |
-| Lisans | MIT | Yayılım kapatılıp satılma riskinden kıymetli. |
+| Lisans | MIT | Yayılım, kapatılıp satılma riskinden kıymetli. |
 | Dağıtım | GitHub Releases (+ winget) | Steam tarafı kapsam dışı bırakıldı. |
 | Dil | Ana dil İngilizce, TR tam çeviri | Windows yereli Türkçeyse TR açılır; araç çubuğundaki EN/TR anında değiştirir. |
 | Kod dili | İngilizce | Depo public; katkı önünü açmak için. Türkçe yalnız i18n sözlüğünde. |
@@ -32,51 +32,85 @@ https://claude.ai/code/artifact/1a4d2e32-785c-4d8c-a57b-b0c30ddbf11a
    piksel erişimi vermediği için efektler ayrı yakalama hattına düşüyor.
 4. NvAPI custom display — SQUASH. NVIDIA dışında karşılığı yok.
 
-Kısayolların oyun içinde çalışması ve tuşun oyuna sızmaması `WH_KEYBOARD_LL` /
-`WH_MOUSE_LL` + `GetForegroundWindow` kapısı demek. `RegisterHotKey` fare yan
-tuşlarını (M4/M5) alamadığı için yetmiyor — Faz 2'nin çekirdeği bu.
-
 ## Durum
 
 **Faz 0 — bitti.** Tauri 2 kabuğu, koyu başlık çubuğu, tepsi ikonu (Aç / Hepsini
-geri al / Çıkış), kapatınca tepsiye inme, tek dosya 8.3 MB exe.
+geri al / Çıkış), kapatınca tepsiye inme, tek dosya 8.4 MB exe.
 
 **Faz 1 — bitti.** `core/` içinde:
 - `target.rs` — `EnumWindows` keşfi, HWND/PID, tekrar eden başlıkların `#1 #2 #3`
   numaralanması, cloaked/tool/owned pencere elemesi.
 - `display.rs` — monitör listesi, EDID adı, native mod, Hz, DPI ölçeği.
-- `layout.rs` — saf matematik, 14 test: bölme ızgarası (×4=2×2 … ×10=5×2, iki
-  satır sabit), en-boy "contain" yerleşimi, letterbox bantları, zoom kelepçesi ve
+- `layout.rs` — saf matematik: bölme ızgarası (×4=2×2 … ×10=5×2, iki satır
+  sabit), en-boy "contain" yerleşimi, letterbox bantları, zoom kelepçesi ve
   ondalık virgül ayrıştırma.
 - `frame.rs` — gölge payı düzeltmeli `place`, kenarlıksız stil soyma, `capture` /
   `restore` çifti.
 
-Arayüz tarafı: üst bar + ikon şeridi, sütun kart tuvali, `+ PENCERE EKLE` kartı,
-ölçekli önizleme (hücre tıklama + kutu çizme), X/Y/W/H, alt durum çubuğu.
-Doğrulandı: gerçek makinede TR otomatik seçildi, monitör `1920×1080 @ 144 Hz`
-okundu, 14 test ve `clippy -D warnings` temiz.
+**Faz 2 — bitti.**
+- `bind.rs` — tetikleyici (tuş / fare, M4-M5 dahil), hold/toggle, eylem kümesi,
+  VK adlandırma. Saf veri, testli.
+- `input.rs` — `WH_KEYBOARD_LL` + `WH_MOUSE_LL` + `SetWinEventHook`, hepsi tek
+  ipliğin kendi mesaj döngüsünde. Karar mantığı (`decide`, `decide_wheel`)
+  Win32'den ayrı tutuldu; 11 test sistem girdisi üretmeden kuralları doğruluyor.
+- `app/hotkeys.rs` — hook ipliğinden gelen olayları alıp pencereye dokunan taraf.
+- Arayüz: kart içinde KISAYOLLAR bölümü, tıkla-bas bağlama alanı, temizleme,
+  HOLD/TOGGLE anahtarı; araç çubuğunda tekerlek ve ana denetim düğmeleri gerçek
+  anahtar oldu.
 
-## Sırada — Faz 2 (bind altyapısı)
+Kurallar: bağlanan tuş yalnız hedef pencere öndeyken yutulur; ana denetim ve F8
+her yerde çalışır ve tuşu **asla** yutmaz; tekerlek en son basılan bağlamayı
+ayarlar; tuş tekrarı eylemi bir kez tetikler.
 
-1. Ayrı iplikte `WH_KEYBOARD_LL` + `WH_MOUSE_LL` hook'u, kendi mesaj döngüsüyle.
-   Ana iplik bloklanırsa Windows hook'u sessizce düşürür.
-2. Odak kapısı: bind yalnız hedef pencere öndeyken tetiklenir.
-3. Hold / Toggle modları, tuşun oyuna sızmaması, master bind'in **hiçbir zaman**
-   tuşu yutmaması.
-4. F8'in global hale gelmesi (şu an sadece uygulama odaktayken).
-5. `SetWinEventHook` nöbetçisi: Alt-Tab sonrası rect'i yeniden dayatma.
+## Neyin kanıtı var
 
-**Kabul:** RMB'ye bağlı bind oyun içinde tetikleniyor ve tuş oyuna sızmıyor;
-alt-tab sonrası pencere konumunu koruyor; F8 her şeyi orijinaline döndürüyor.
+| İddia | Kanıt |
+| --- | --- |
+| Hook kuruluyor | Uygulama açılıyor; `SetWindowsHookExW` başarısız olsa `setup` hata döner ve açılmazdı |
+| F8 arka planda çalışıyor | `SendInput` ile uygulama odakta değilken F8 gönderildi; durum çubuğu gerçek sayıyla yanıtladı |
+| Pencere keşfi | Canlı makinede "7 pencere bulundu", ayrıca `target.rs`'te canlı smoke test |
+| Monitör okuma | `Generic PnP Monitor 1920×1080 @ 144 Hz` |
+| TR otomatik | Uygulama Türkçe açtı, EN/TR düğmesi yerinde |
+| Bağlama kuralları | 31 test, `clippy -D warnings` temiz |
 
-## Doğrulanmamış, Faz 1'de denenecek
+Henüz **gerçek bir oyunla** doğrulanmadı: tuşun oyuna sızmaması (yutma) ve
+Alt-Tab nöbetçisinin sahada davranışı. İkisinin de birim testi var, saha testi yok.
 
-- **DPI modu.** Başka bir sürecin DPI farkındalığı çalışma anında
-  değiştirilemiyor. En olası yol `HKCU\...\AppCompatFlags\Layers` per-app bayrağı
-  — ama bu hedefin yeniden başlatılmasını gerektirir. Gerçek bir oyunla denenip
-  doğrulanmazsa modül "yeniden başlatma gerekir" etiketiyle çıkacak.
-- **WGC sarı çerçeve.** Windows 10 1903-1909'da pencere yakalamada zorunluydu;
-  `IsBorderRequired` kontrolü ve gerekirse thumbnail moduna düşme Faz 5'te.
+## Sırada — Faz 3 (thumbnail zoom)
+
+Katmanlı overlay penceresi, `DwmRegisterThumbnail`, `rcSource` merkez hesabı,
+0.01×–64× faktör, tekerlekle canlı ayar, ×1.25/×1.5/×2, WINDOW ve STRETCH
+yöntemleri. Faz 2'nin `Engaged`/`Released`/`Wheel` olayları zaten bu modülü
+bekliyor.
+
+**Kabul:** bind basılıyken görüntü FPS düşüşü olmadan büyüyor, bırakınca anında
+dönüyor, titreme yok.
+
+## Kaynak uygulamanın yama notlarından çıkanlar
+
+Mağaza açıklaması 14 Eyl itibarıyla neredeyse aynı (sadece bir destek satırı
+eklenmiş), ama duyurularda plana giren ayrıntılar var:
+
+- **SQUASH artık kendi araç çubuğu düğmesinde** (11 Eyl). Kart içinde mod rozeti
+  olarak değil, ayrı pencere olarak kurulacak.
+- **Özel çözünürlük oluşturmada bozuk modlar baştan reddediliyor** — EDID limit
+  kontrolü uygulamadan önce.
+- **CurveFX:** eğrilik aralığı −200…+200; en-boy oranını koruyan "Window Size"
+  kaydırıcısı; pikselleştirme ve CRT birlikte çalışır (kaynakta CRT açıkken
+  pikselleştirme kapanıyordu, düzeltilmiş).
+- **Motion Blur:** ayarları sıfırlamayan ON/OFF anahtarı; blur kaydırıcısı
+  Shutter modunda da etkili; arayüz yalnız seçili modda anlamlı ayarları gösterir;
+  Center koruması iki modda da var.
+- **Scope bind'i:** kısa basış lensi aç/kapa, basılı tutmak **her zaman** açar;
+  basılıyken tekerlek yalnız lensi boyutlandırır (tam ekran zoom'a kazara geçmez);
+  boyutlandırırken yarı saydam kare + parlak kenarlık gösterilir.
+- **Tekerlek adımları:** nişangâh ±%10, dürbün ±25 px / tık.
+- **Otomatik temizlik:** oyun penceresi kapanınca thumbnail, layer, nişangâh ve
+  dürbün kaldırılır.
+- **Alt-Tab:** oyundan çıkınca overlay kendini gizler, dönünce anında geri gelir;
+  hold modundaki bağlamalar kendiliğinden yeniden tetiklenmez.
+- **LoL/Dota notu:** imleç koordinatı yeniden eşleme anti-cheat yüzünden
+  reddediliyor. Bizde de kırmızı çizgi kalacak.
 
 ## Tuzaklar (yaşandı)
 
@@ -85,4 +119,8 @@ alt-tab sonrası pencere konumunu koruyor; F8 her şeyi orijinaline döndürüyo
 - Kart şablonunda (`<template>`) `id` kullanılamaz — her klon aynı id'yi
   çoğaltır. Etiketler `<label class="field"><span>` sarmalıyla kuruldu.
 - `PrintWindow` ile pencere yakalarken `GetClientRect` değil `GetWindowRect`
-  ölçüsü lazım; yoksa alt kısım kırpılır (durum çubuğu görünmez sanılır).
+  ölçüsü lazım; yoksa alt kısım kırpılır (durum çubuğu yokmuş gibi görünür).
+- CSS'te `.result { display: inline-block }` tarayıcının `[hidden]` varsayılanını
+  eziyor; `display` veren her kurala `[hidden] { display: none }` eşlik etmeli.
+- Hook geri çağrısında bloklayan `lock()` tüm makinenin klavyesini dondurur;
+  `try_lock` + çekişmede geçir şart.
