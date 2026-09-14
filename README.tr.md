@@ -7,8 +7,8 @@ değiştirir.
 
 Açık kaynak, yalnız Windows. [English](README.md)
 
-> **Durum: erken.** Pencere keşfi, monitör tespiti, yerleşim, konumlandırma ve
-> kısayollar çalışıyor. Zoom, katmanlar, CurveFX ve SQUASH aşağıdaki yol
+> **Durum: erken.** Pencere keşfi, monitör tespiti, yerleşim, konumlandırma,
+> kısayollar ve büyütme çalışıyor. Katmanlar, CurveFX ve SQUASH aşağıdaki yol
 > haritasında; henüz derlemede yok.
 
 ## Ne yapar
@@ -23,6 +23,11 @@ Açık kaynak, yalnız Windows. [English](README.md)
 - **Düzgün davranan kısayollar** — bir tuşa ya da farenin yan düğmesine bağla;
   bağlama yalnız hedef pencere öndeyken tetiklenir ve tuş oyuna geçmez. Ana
   denetim, uygulamayı açmadan bunu askıya alır; ne ana denetim ne de F8 tuşu yutar.
+- **Oyuna dokunmadan büyütür** — bağlamayı basılı tut, pencerenin canlı DWM
+  kopyası bir overlay üzerinde büyütülür. Oyun ne oynatılır ne de haberi olur;
+  kendi çözünürlüğünde render etmeye devam eder, FPS yerinde kalır. Basılıyken
+  tekerlek katsayıyı değiştirir. `WINDOW` ve `STRETCH` bunun yerine gerçek
+  pencereyi oynatır ve bırakınca geri koyar.
 - **Yerleşimi tutar** — pencereyi sabitlersen, oyun Alt-Tab sonrası geri
   oynattığında yerleşim yeniden dayatılır.
 - **Geri alır** — F8, tlk-grid'in dokunduğu her pencereyi eski stiline ve
@@ -36,7 +41,8 @@ Hepsi dört belgelenmiş Windows API'siyle:
 | --- | --- |
 | Pencere keşfi, konumlandırma, kenarlıksız | Win32 `EnumWindows`, `SetWindowPos`, pencere stilleri |
 | Piksel doğruluğunda çerçeveleme | DWM `DWMWA_EXTENDED_FRAME_BOUNDS` |
-| Zoom, dürbün lensi, HUD katmanları *(planlı)* | DWM thumbnail (`DwmRegisterThumbnail` + `rcSource`) |
+| Büyütme | DWM thumbnail (`DwmRegisterThumbnail` + `rcDestination`) |
+| Dürbün lensi, HUD katmanları *(planlı)* | Aynısı, `rcSource` bir bölgeye ayarlanmış hâli |
 | Kavisli ekran, CRT, motion blur *(planlı)* | Windows.Graphics.Capture → D3D11 → HLSL |
 | Özel ekran modları *(planlı)* | NVIDIA NvAPI |
 
@@ -69,8 +75,8 @@ cargo build --release           # target/release/tlk-grid.exe, tek dosya
 | 0 | Kabuk, tepsi, tek dosya derleme | bitti |
 | 1 | Hedef keşfi, monitörler, yerleşim, konumlandırma, F8 | bitti |
 | 2 | Kısayollar: düşük seviye hook, hold/toggle, master bypass, Alt-Tab nöbeti | bitti |
-| 3 | Thumbnail zoom, window/stretch/DPI yöntemleri, tekerlekle faktör | sırada |
-| 4 | Siyah bantlar, özel overlay'ler, nişangâh, dürbün lensi, HUD katmanları | |
+| 3 | Thumbnail zoom, window/stretch yöntemleri, tekerlekle faktör | bitti |
+| 4 | Siyah bantlar, özel overlay'ler, nişangâh, dürbün lensi, HUD katmanları | sırada |
 | 5 | CurveFX: kavisli ekran, CRT, dört motion blur modu | |
 | 6 | SQUASH: NvAPI özel ekran modları | |
 | 7 | Profiller, hazır ayar kitaplığı, dil anahtarı | kısmen (dil bitti) |

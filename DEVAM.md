@@ -47,6 +47,22 @@ geri al / Çıkış), kapatınca tepsiye inme, tek dosya 8.4 MB exe.
 - `frame.rs` — gölge payı düzeltmeli `place`, kenarlıksız stil soyma, `capture` /
   `restore` çifti.
 
+**Faz 3 — bitti.** Ürünün kalbi çalışıyor.
+- `core/overlay.rs` — tıklama geçiren, odak almayan, en üstte duran overlay
+  penceresi kendi ipliğinde; `DwmRegisterThumbnail` ile kaynağın canlı kopyası,
+  `rcDestination` monitörün dışına taşırılıp DWM'e kırptırılıyor. Kaynak
+  değişmedikçe thumbnail yeniden kaydedilmiyor.
+- `core/zoom.rs` — dört yöntem, hedef dikdörtgen hesabı, tekerlek merdiveni
+  (1,2×'te 0,1 işe yaramaz; 20×'te 1,0 çok kaba, o yüzden adım katsayıya göre
+  büyüyor).
+- Arayüz: bind satırında katsayı alanı, BÜYÜTME YÖNTEMİ anahtarı (her yöntemin
+  altında ne yaptığını yazan tek satır), sonuç okuması ve ×1,25 / ×1,5 / ×2.
+
+Yöntemler: **THUMBNAIL** oyuna hiç dokunmaz — maç sırasında bağlı bırakılacak
+olan bu. **WINDOW** gerçek pencereyi ekran dışına taşırır, bırakınca geri koyar.
+**STRETCH** pencereyi monitörü dolduracak şekilde gerer. **DPI** çalışan bir
+sürece uygulanamıyor; arayüz bunu yazıyor, taklit etmiyor.
+
 **Faz 2 — bitti.**
 - `bind.rs` — tetikleyici (tuş / fare, M4-M5 dahil), hold/toggle, eylem kümesi,
   VK adlandırma. Saf veri, testli.
@@ -72,19 +88,26 @@ ayarlar; tuş tekrarı eylemi bir kez tetikler.
 | Monitör okuma | `Generic PnP Monitor 1920×1080 @ 144 Hz` |
 | TR otomatik | Uygulama Türkçe açtı, EN/TR düğmesi yerinde |
 | Bağlama kuralları | 31 test, `clippy -D warnings` temiz |
+| DWM thumbnail gerçekten çiziliyor | `overlay_smoke` testi: 1:1 yansıtmada ekranda 229 ayrı renk, düz siyah fırça değil |
+| `rcDestination` büyütüyor | Aynı yamada 1:1 ile 4× farklı görüntü veriyor |
+| Zoom matematiği | 38 test |
 
 Henüz **gerçek bir oyunla** doğrulanmadı: tuşun oyuna sızmaması (yutma) ve
 Alt-Tab nöbetçisinin sahada davranışı. İkisinin de birim testi var, saha testi yok.
 
-## Sırada — Faz 3 (thumbnail zoom)
+## Sırada — Faz 4 (katmanlar)
 
-Katmanlı overlay penceresi, `DwmRegisterThumbnail`, `rcSource` merkez hesabı,
-0.01×–64× faktör, tekerlekle canlı ayar, ×1.25/×1.5/×2, WINDOW ve STRETCH
-yöntemleri. Faz 2'nin `Engaged`/`Released`/`Wheel` olayları zaten bu modülü
-bekliyor.
+Siyah bantlar, dört yönlü özel overlay (PNG/JPG/GIF), nişangâh (yükleme + çizim
+tuvali + tekerlekle boyut), dürbün lensi, Layers bölge seçici ve HUD pencereleri.
+Hepsi `overlay.rs`'in üstüne biniyor: dürbün ve Layers, `rcSource` verilmiş
+ikinci ve üçüncü thumbnail'den ibaret.
 
-**Kabul:** bind basılıyken görüntü FPS düşüşü olmadan büyüyor, bırakınca anında
-dönüyor, titreme yok.
+Kaynak uygulamanın yama notlarından gelen davranış ayrıntıları aşağıda —
+özellikle dürbün bind'i ve tekerlek adımları.
+
+**Kabul:** radar bölgesi ayrı bir pencereye alınıp ekranın istenen köşesine
+taşınabiliyor; dürbün lensi zoom sırasında merkezde kalıyor ve nişangâh onun da
+üstünde.
 
 ## Kaynak uygulamanın yama notlarından çıkanlar
 
@@ -124,3 +147,8 @@ eklenmiş), ama duyurularda plana giren ayrıntılar var:
   eziyor; `display` veren her kurala `[hidden] { display: none }` eşlik etmeli.
 - Hook geri çağrısında bloklayan `lock()` tüm makinenin klavyesini dondurur;
   `try_lock` + çekişmede geçir şart.
+- `windows` 0.62'de `HTHUMBNAIL` tipi yok; `DwmRegisterThumbnail` düz `isize`
+  döndürüyor.
+- Overlay penceresinde `UpdateLayeredWindow` (piksel başına alfa) kullanılırsa
+  DWM thumbnail hiç çizilmiyor. `SetLayeredWindowAttributes` + sabit alfa şart —
+  bu, projenin en riskli bilinmeyeniydi ve `overlay_smoke` ile kapatıldı.
