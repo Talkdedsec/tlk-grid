@@ -414,6 +414,13 @@ input:focus, select:focus { border-color: var(--accent-soft); }
   cursor: pointer;
 }
 
+/* The placeholder is long in both languages; keep every row one line tall. */
+.bind-key {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .bind-key:hover { border-color: var(--accent-soft); }
 .bind-key[data-empty="true"] { color: var(--faint); font-size: 11px; }
 .bind-key[data-capturing="true"] { border-color: var(--accent); color: var(--accent); }
@@ -423,3 +430,30 @@ input:focus, select:focus { border-color: var(--accent-soft); }
 /* A bind that is currently engaged reads at a glance during play. */
 .bind[data-engaged="true"] .bind-key { border-color: var(--accent); color: var(--accent); }
 .bind[data-engaged="true"] .bind-action { color: var(--accent-text); }
+
+.section h3.sub { margin-top: 16px; }
+
+.bind-factor {
+  flex: 0 0 62px;
+  width: 62px;
+  height: 30px;
+  text-align: center;
+}
+
+.bind-factor[hidden] { display: none; }
+
+.chips.methods .chip { letter-spacing: 0.1em; font-size: 10.5px; }
+.chips.methods .chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.chip.mult { font-size: 11px; }
+
+/* DPI cannot act on a running game; the switch says so instead of lying. */
+.chips.methods .chip[data-method="dpi"][aria-pressed="true"] {
+  border-color: var(--danger);
+  color: #f0b7c3;
+  background: #2a1a20;
+}

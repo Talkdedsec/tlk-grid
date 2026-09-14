@@ -146,6 +146,11 @@ impl Input {
         with_shared(|s| s.wheel_adjusts = on);
     }
 
+    /// Which window the non-global binds are gated on right now.
+    pub fn target(&self) -> Option<isize> {
+        read_shared(|s| s.target).flatten()
+    }
+
     pub fn is_engaged(&self, action: Action) -> bool {
         read_shared(|s| s.engaged.contains(&action)).unwrap_or(false)
     }

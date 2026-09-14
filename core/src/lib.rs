@@ -13,7 +13,9 @@ pub mod error;
 pub mod frame;
 pub mod input;
 pub mod layout;
+pub mod overlay;
 pub mod target;
+pub mod zoom;
 
 pub use error::{Error, Result};
 pub use layout::Rect;

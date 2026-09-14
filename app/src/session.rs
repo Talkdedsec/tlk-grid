@@ -15,6 +15,7 @@ use std::time::{Duration, Instant};
 
 use tlkgrid_core::frame::{Border, OriginalState};
 use tlkgrid_core::layout::Rect;
+use tlkgrid_core::zoom::{self, Method};
 
 /// A re-apply is skipped this long after our own, so the guard does not chase
 /// the move it just made.
@@ -27,10 +28,22 @@ pub struct Pin {
     applied_at: Instant,
 }
 
+/// What the Resize bind does for one window.
+#[derive(Clone, Copy)]
+pub struct Zoom {
+    pub factor: f64,
+    pub method: Method,
+    pub border: Border,
+    /// Where the window sat before a window-moving method engaged, so letting
+    /// go puts it back.
+    pub resting: Option<Rect>,
+}
+
 #[derive(Default)]
 struct State {
     touched: HashMap<isize, OriginalState>,
     pinned: HashMap<isize, Pin>,
+    zoom: HashMap<isize, Zoom>,
 }
 
 #[derive(Default)]
@@ -85,15 +98,60 @@ impl Session {
         }
     }
 
+    // ------------------------------------------------------------------ zoom
+
+    pub fn set_zoom(&self, handle: isize, factor: f64, method: Method, border: Border) {
+        let mut state = self.lock();
+        let resting = state.zoom.get(&handle).and_then(|z| z.resting);
+        state.zoom.insert(
+            handle,
+            Zoom {
+                factor,
+                method,
+                border,
+                resting,
+            },
+        );
+    }
+
+    pub fn zoom(&self, handle: isize) -> Option<Zoom> {
+        self.lock().zoom.get(&handle).copied()
+    }
+
+    /// Wheel notches while the bind is held. Returns the new factor so the
+    /// caller can redraw and tell the UI.
+    pub fn nudge_zoom(&self, handle: isize, notches: i32) -> Option<f64> {
+        let mut state = self.lock();
+        let entry = state.zoom.get_mut(&handle)?;
+        entry.factor = zoom::nudge(entry.factor, notches);
+        Some(entry.factor)
+    }
+
+    /// Records where a window-moving method found the window, once per hold.
+    pub fn park(&self, handle: isize, resting: Rect) {
+        if let Some(entry) = self.lock().zoom.get_mut(&handle) {
+            entry.resting.get_or_insert(resting);
+        }
+    }
+
+    /// Hands back the parked rect and clears it, for the release path.
+    pub fn unpark(&self, handle: isize) -> Option<Rect> {
+        self.lock().zoom.get_mut(&handle)?.resting.take()
+    }
+
+    // --------------------------------------------------------------- undoing
+
     pub fn release(&self, handle: isize) -> Option<OriginalState> {
         let mut state = self.lock();
         state.pinned.remove(&handle);
+        state.zoom.remove(&handle);
         state.touched.remove(&handle)
     }
 
     pub fn drain(&self) -> Vec<OriginalState> {
         let mut state = self.lock();
         state.pinned.clear();
+        state.zoom.clear();
         state
             .touched
             .drain()

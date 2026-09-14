@@ -6,6 +6,8 @@ const listen = window.__TAURI__.event.listen;
 /** Actions a window card can bind. Scope and crosshair get their own windows. */
 const CARD_ACTIONS = ["resize", "black-bars"];
 const ACTION_LABEL = { resize: "binds.resize", "black-bars": "binds.blackBars" };
+/** Only Resize carries a zoom factor; Black Bars is a plain on/off overlay. */
+const FACTOR_ACTIONS = new Set(["resize"]);
 
 const canvas = document.querySelector(".canvas");
 const addCard = document.querySelector(".add-card");
@@ -49,6 +51,14 @@ async function boot() {
 
   monitors = await invoke("list_monitors");
   await listen("input", (message) => onInput(message.payload));
+  await listen("factor", (message) => {
+    const card = cards.find((c) => c.handle === bindTargetHandle) ?? cards[0];
+    if (!card) return;
+    card.factor = String(message.payload).replace(".", ",");
+    const field = card.el.querySelector(".bind-factor");
+    if (field) field.value = card.factor;
+    paintZoomResult(card);
+  });
   await listen("restored", async (message) => {
     for (const card of cards) await readBackRect(card);
     say(message.payload > 0 ? "status.restoredAll" : "status.nothingToRestore", {
@@ -145,6 +155,8 @@ function addWindowCard() {
     divisions: 0,
     borderless: false,
     pin: false,
+    method: "thumbnail",
+    factor: "1,5",
     binds: Object.fromEntries(CARD_ACTIONS.map((action) => [action, null])),
   };
   cards.push(card);
@@ -162,7 +174,9 @@ function refreshCardLabels(card) {
   card.el.querySelector(".card-index").textContent = t("card.index", { n: card.index });
   card.el.querySelector(".card-mode").textContent = t("card.mode.window");
   for (const action of CARD_ACTIONS) paintBind(card, action);
+  if (card.el.querySelector("[data-method]")) paintMethod(card);
   paintResult(card);
+  paintZoomResult(card);
 }
 
 function q(card, selector) {
@@ -308,6 +322,7 @@ async function onTargetPicked(card) {
     fillMonitors(card);
     await readBackRect(card);
     await pushBinds(card);
+    await pushZoom(card);
     if (card.rect) {
       say("status.selected", {
         name: q(card, ".target-select").selectedOptions[0].textContent,
@@ -382,6 +397,7 @@ async function applyCard(card) {
     });
     card.rect = placed;
     syncCard(card);
+    await pushZoom(card);
     say("status.applied", placed);
   } catch (err) {
     reportFailure(err);
@@ -512,7 +528,7 @@ function localPoint(element, event) {
 /* ----------------------------------------------------------------- binds */
 
 function buildBinds(card) {
-  const host = q(card, ".binds");
+  const host = q(card, ".bind-rows");
   for (const action of CARD_ACTIONS) {
     const row = bindTemplate.content.firstElementChild.cloneNode(true);
     row.dataset.action = action;
@@ -520,9 +536,80 @@ function buildBinds(card) {
     row.querySelector(".bind-key").addEventListener("click", () => beginCapture(card, action));
     row.querySelector(".bind-clear").addEventListener("click", () => clearBind(card, action));
     row.querySelector(".bind-mode").addEventListener("click", () => cycleMode(card, action));
+
+    const factor = row.querySelector(".bind-factor");
+    if (FACTOR_ACTIONS.has(action)) {
+      factor.value = card.factor;
+      factor.addEventListener("change", () => {
+        card.factor = factor.value;
+        pushZoom(card);
+      });
+    } else {
+      factor.hidden = true;
+    }
+
     host.append(row);
     paintBind(card, action);
   }
+
+  for (const chip of card.el.querySelectorAll("[data-method]")) {
+    chip.addEventListener("click", () => selectMethod(card, chip.dataset.method));
+  }
+  for (const chip of card.el.querySelectorAll(".mult")) {
+    chip.addEventListener("click", () => {
+      card.factor = String(Number(chip.dataset.mult));
+      q(card, ".bind-factor").value = card.factor;
+      pushZoom(card);
+    });
+  }
+  paintMethod(card);
+}
+
+function selectMethod(card, method) {
+  card.method = method;
+  paintMethod(card);
+  pushZoom(card);
+}
+
+function paintMethod(card) {
+  for (const chip of card.el.querySelectorAll("[data-method]")) {
+    chip.setAttribute("aria-pressed", String(chip.dataset.method === card.method));
+  }
+  q(card, ".method-note").textContent = t(`zoom.note.${card.method}`);
+}
+
+/** Hands the backend what the Resize bind should do for this window. */
+async function pushZoom(card) {
+  if (!card.handle) return;
+  try {
+    const factor = await invoke("set_zoom", {
+      handle: card.handle,
+      factor: card.factor,
+      method: card.method,
+      borderless: card.borderless,
+    });
+    card.factor = String(factor).replace(".", ",");
+    q(card, ".bind-factor").value = card.factor;
+    paintZoomResult(card);
+    say("status.factorSet", { factor: card.factor });
+  } catch (err) {
+    reportFailure(err);
+  }
+}
+
+/** `Result: 5760 × 1620 (base 1920×540)` under the multiplier buttons. */
+async function paintZoomResult(card) {
+  const node = q(card, ".zoom-result");
+  const factor = Number(String(card.factor).replace(",", "."));
+  if (!card.rect || !Number.isFinite(factor)) {
+    node.hidden = true;
+    return;
+  }
+  const dest = await invoke("zoom_destination", { base: card.rect, factor });
+  node.hidden = false;
+  node.textContent =
+    `${t("result.label")}: ${dest.w} × ${dest.h} ` +
+    `(${t("result.base")} ${card.rect.w}×${card.rect.h})`;
 }
 
 function bindRow(card, action) {
@@ -580,7 +667,10 @@ async function cycleMode(card, action) {
 
 /** The hook holds one bind set at a time, so the card whose window is in front
  * owns it. Switching targets swaps the set rather than merging them. */
+let bindTargetHandle = null;
+
 async function pushBinds(card) {
+  bindTargetHandle = card.handle;
   const binds = CARD_ACTIONS.filter((action) => card.binds[action]).map((action) => ({
     action,
     trigger: card.binds[action].trigger,

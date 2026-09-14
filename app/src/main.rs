@@ -9,6 +9,7 @@ mod tray;
 use tauri::{Manager, WindowEvent};
 use tlkgrid_core::bind::panic_bind;
 use tlkgrid_core::input::Input;
+use tlkgrid_core::overlay::Overlay;
 
 use session::Session;
 
@@ -20,6 +21,7 @@ fn main() {
             // F8 is live from startup, before any profile is loaded.
             input.set_binds(vec![panic_bind()]);
             app.manage(input);
+            app.manage(Overlay::start()?);
             hotkeys::spawn(app.handle(), events);
             tray::install(app.handle())?;
             Ok(())
@@ -55,6 +57,9 @@ fn main() {
             commands::set_wheel_adjusts,
             commands::trigger_label,
             commands::key_name,
+            commands::set_zoom,
+            commands::zoom_shortcuts,
+            commands::zoom_destination,
         ])
         .run(tauri::generate_context!())
         .expect("tlk-grid failed to start");

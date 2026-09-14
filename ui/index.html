@@ -111,6 +111,24 @@
       <section class="section binds">
         <h3 data-i18n="binds.title">Hotkeys</h3>
         <p class="hint" data-i18n="binds.hint"></p>
+        <div class="bind-rows"></div>
+
+        <h3 class="sub" data-i18n="zoom.method">Zoom method</h3>
+        <div class="chips methods">
+          <button class="chip" type="button" data-method="thumbnail" aria-pressed="true">THUMBNAIL</button>
+          <button class="chip" type="button" data-method="window" aria-pressed="false">WINDOW</button>
+          <button class="chip" type="button" data-method="stretch" aria-pressed="false">STRETCH</button>
+          <button class="chip" type="button" data-method="dpi" aria-pressed="false">DPI</button>
+        </div>
+        <p class="hint method-note"></p>
+
+        <div class="row">
+          <span class="result zoom-result" hidden></span>
+          <span class="grow"></span>
+          <button class="chip mult" type="button" data-mult="1.25">×1.25</button>
+          <button class="chip mult" type="button" data-mult="1.5">×1.5</button>
+          <button class="chip mult" type="button" data-mult="2">×2</button>
+        </div>
       </section>
 
     </div>
@@ -122,6 +140,7 @@
 <template id="bind-template">
   <div class="bind">
     <span class="bind-action"></span>
+    <input class="bind-factor" type="text" inputmode="decimal" data-i18n-title="zoom.factorTitle">
     <button class="bind-key" type="button"></button>
     <button class="icon-btn bind-clear" type="button" data-i18n-aria="binds.clear" aria-label="Clear this bind">×</button>
     <button class="btn bind-mode" type="button"></button>
