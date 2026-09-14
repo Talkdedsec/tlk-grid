@@ -100,13 +100,32 @@
           <span data-i18n="layout.borderless">Borderless</span>
         </label>
 
+        <label class="check">
+          <input class="pin" type="checkbox">
+          <span data-i18n="layout.pin">Hold the layout through Alt-Tab</span>
+        </label>
+
         <span class="result" hidden></span>
+      </section>
+
+      <section class="section binds">
+        <h3 data-i18n="binds.title">Hotkeys</h3>
+        <p class="hint" data-i18n="binds.hint"></p>
       </section>
 
     </div>
 
     <button class="apply" type="button" data-i18n="apply" disabled>APPLY</button>
   </article>
+</template>
+
+<template id="bind-template">
+  <div class="bind">
+    <span class="bind-action"></span>
+    <button class="bind-key" type="button"></button>
+    <button class="icon-btn bind-clear" type="button" data-i18n-aria="binds.clear" aria-label="Clear this bind">×</button>
+    <button class="btn bind-mode" type="button"></button>
+  </div>
 </template>
 
 <script type="module" src="js/main.js"></script>

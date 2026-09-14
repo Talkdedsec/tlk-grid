@@ -1,11 +1,22 @@
 import { language, missingKeys, other, setLanguage, t, translateDocument } from "./i18n.js";
 
 const invoke = window.__TAURI__.core.invoke;
+const listen = window.__TAURI__.event.listen;
+
+/** Actions a window card can bind. Scope and crosshair get their own windows. */
+const CARD_ACTIONS = ["resize", "black-bars"];
+const ACTION_LABEL = { resize: "binds.resize", "black-bars": "binds.blackBars" };
 
 const canvas = document.querySelector(".canvas");
 const addCard = document.querySelector(".add-card");
 const statusbar = document.querySelector(".statusbar");
 const cardTemplate = document.querySelector("#card-template");
+const bindTemplate = document.querySelector("#bind-template");
+
+/** Which bind field is armed, if any: { card, action }. */
+let capturing = null;
+let masterOn = true;
+let wheelAdjusts = true;
 
 /** Monitors are shared by every card; the window list is re-read on demand. */
 let monitors = [];
@@ -37,6 +48,13 @@ async function boot() {
   paintLanguageButton();
 
   monitors = await invoke("list_monitors");
+  await listen("input", (message) => onInput(message.payload));
+  await listen("restored", async (message) => {
+    for (const card of cards) await readBackRect(card);
+    say(message.payload > 0 ? "status.restoredAll" : "status.nothingToRestore", {
+      n: message.payload,
+    });
+  });
   wireToolbar();
   addWindowCard();
   say("status.ready");
@@ -58,22 +76,46 @@ function wireToolbar() {
 
   document.querySelector('[data-tool="panic"]').addEventListener("click", restoreEverything);
 
+  const wheelButton = document.querySelector('[data-tool="zoom-scroll"]');
+  wheelButton.removeAttribute("data-stage");
+  wheelButton.setAttribute("aria-pressed", String(wheelAdjusts));
+  wheelButton.addEventListener("click", async () => {
+    wheelAdjusts = !wheelAdjusts;
+    await invoke("set_wheel_adjusts", { enabled: wheelAdjusts });
+    wheelButton.setAttribute("aria-pressed", String(wheelAdjusts));
+    say(wheelAdjusts ? "status.wheelOn" : "status.wheelOff");
+  });
+
+  const masterButton = document.querySelector('[data-tool="master"]');
+  masterButton.removeAttribute("data-stage");
+  masterButton.setAttribute("aria-pressed", String(masterOn));
+  masterButton.addEventListener("click", () => setMaster(!masterOn));
+
   for (const tool of document.querySelectorAll(".tool[data-stage]")) {
     tool.addEventListener("click", () =>
       say("status.notBuilt", { module: tool.title }, "warn")
     );
   }
 
-  addCard.addEventListener("click", addWindowCard);
-
-  // F8 is the emergency reset in the guide; the app honours it while focused,
-  // and a global hook takes over once the bind layer lands.
+  // Esc backs out of an armed bind field without assigning anything.
   window.addEventListener("keydown", (event) => {
-    if (event.key === "F8") {
+    if (event.key === "Escape" && capturing) {
       event.preventDefault();
-      restoreEverything();
+      invoke("cancel_bind_capture");
+      endCapture();
     }
   });
+
+  addCard.addEventListener("click", addWindowCard);
+  // F8 is handled by the input hook, so it works with the app in the
+  // background too. Nothing to bind here.
+}
+
+async function setMaster(on) {
+  masterOn = on;
+  await invoke("set_master", { enabled: on });
+  document.querySelector('[data-tool="master"]').setAttribute("aria-pressed", String(on));
+  say(on ? "status.masterOn" : "status.masterOff", null, on ? "info" : "warn");
 }
 
 async function restoreEverything() {
@@ -102,6 +144,8 @@ function addWindowCard() {
     rect: null,
     divisions: 0,
     borderless: false,
+    pin: false,
+    binds: Object.fromEntries(CARD_ACTIONS.map((action) => [action, null])),
   };
   cards.push(card);
 
@@ -117,6 +161,7 @@ function addWindowCard() {
 function refreshCardLabels(card) {
   card.el.querySelector(".card-index").textContent = t("card.index", { n: card.index });
   card.el.querySelector(".card-mode").textContent = t("card.mode.window");
+  for (const action of CARD_ACTIONS) paintBind(card, action);
   paintResult(card);
 }
 
@@ -165,6 +210,14 @@ function wireCard(card) {
   q(card, ".borderless").addEventListener("change", (event) => {
     card.borderless = event.target.checked;
   });
+
+  q(card, ".pin").addEventListener("change", (event) => {
+    card.pin = event.target.checked;
+    say(card.pin ? "status.pinned" : "status.unpinned");
+    if (card.handle && card.rect) applyCard(card);
+  });
+
+  buildBinds(card);
 
   q(card, ".apply").addEventListener("click", () => applyCard(card));
 
@@ -254,6 +307,7 @@ async function onTargetPicked(card) {
     card.monitor = await invoke("monitor_for_window", { handle: card.handle });
     fillMonitors(card);
     await readBackRect(card);
+    await pushBinds(card);
     if (card.rect) {
       say("status.selected", {
         name: q(card, ".target-select").selectedOptions[0].textContent,
@@ -319,7 +373,12 @@ async function applyCard(card) {
   if (!card.handle || !card.rect) return;
   try {
     const placed = await invoke("apply_placement", {
-      request: { handle: card.handle, rect: card.rect, borderless: card.borderless },
+      request: {
+        handle: card.handle,
+        rect: card.rect,
+        borderless: card.borderless,
+        pin: card.pin,
+      },
     });
     card.rect = placed;
     syncCard(card);
@@ -448,6 +507,154 @@ function wirePreview(card) {
 function localPoint(element, event) {
   const box = element.getBoundingClientRect();
   return { x: event.clientX - box.left, y: event.clientY - box.top };
+}
+
+/* ----------------------------------------------------------------- binds */
+
+function buildBinds(card) {
+  const host = q(card, ".binds");
+  for (const action of CARD_ACTIONS) {
+    const row = bindTemplate.content.firstElementChild.cloneNode(true);
+    row.dataset.action = action;
+    translateDocument(row);
+    row.querySelector(".bind-key").addEventListener("click", () => beginCapture(card, action));
+    row.querySelector(".bind-clear").addEventListener("click", () => clearBind(card, action));
+    row.querySelector(".bind-mode").addEventListener("click", () => cycleMode(card, action));
+    host.append(row);
+    paintBind(card, action);
+  }
+}
+
+function bindRow(card, action) {
+  return card.el.querySelector('.bind[data-action="' + action + '"]');
+}
+
+function paintBind(card, action) {
+  const row = bindRow(card, action);
+  if (!row) return;
+  const bind = card.binds[action];
+  row.querySelector(".bind-action").textContent = t(ACTION_LABEL[action]);
+
+  const key = row.querySelector(".bind-key");
+  const armed = Boolean(capturing && capturing.card === card && capturing.action === action);
+  key.dataset.capturing = String(armed);
+  key.dataset.empty = String(!bind && !armed);
+  key.textContent = armed ? t("binds.capturing") : (bind ? bind.label : t("binds.setKey"));
+
+  row.querySelector(".bind-mode").textContent = t(
+    bind && bind.mode === "toggle" ? "binds.toggle" : "binds.hold"
+  );
+}
+
+async function beginCapture(card, action) {
+  const previous = capturing;
+  if (previous) await invoke("cancel_bind_capture");
+  capturing = { card, action };
+  if (previous) paintBind(previous.card, previous.action);
+  paintBind(card, action);
+  say("status.capturing");
+  await invoke("begin_bind_capture");
+}
+
+function endCapture() {
+  if (!capturing) return;
+  const { card, action } = capturing;
+  capturing = null;
+  paintBind(card, action);
+}
+
+async function clearBind(card, action) {
+  card.binds[action] = null;
+  paintBind(card, action);
+  await pushBinds(card);
+  say("status.bindCleared", { action: t(ACTION_LABEL[action]) });
+}
+
+async function cycleMode(card, action) {
+  const bind = card.binds[action];
+  if (!bind) return;
+  bind.mode = bind.mode === "toggle" ? "hold" : "toggle";
+  paintBind(card, action);
+  await pushBinds(card);
+}
+
+/** The hook holds one bind set at a time, so the card whose window is in front
+ * owns it. Switching targets swaps the set rather than merging them. */
+async function pushBinds(card) {
+  const binds = CARD_ACTIONS.filter((action) => card.binds[action]).map((action) => ({
+    action,
+    trigger: card.binds[action].trigger,
+    mode: card.binds[action].mode,
+    swallow: true,
+  }));
+  await invoke("set_bind_target", { handle: card.handle });
+  await invoke("set_binds", { binds });
+}
+
+function cardFor(handle) {
+  return cards.find((card) => card.handle === handle) ?? null;
+}
+
+function actionName(action) {
+  return t(ACTION_LABEL[action] ?? action);
+}
+
+async function onInput(event) {
+  switch (event.event) {
+    case "captured":
+      return onCaptured(event);
+    case "engaged":
+    case "released":
+      return onBindState(event);
+    case "wheel":
+      say("status.wheelNotch", {
+        action: actionName(event.action),
+        notches: event.notches > 0 ? "+" + event.notches : String(event.notches),
+      });
+      return;
+    case "foreground": {
+      const card = cardFor(event.handle);
+      if (card) await pushBinds(card);
+      return;
+    }
+    default:
+      return;
+  }
+}
+
+async function onCaptured(event) {
+  if (!capturing) return;
+  const { card, action } = capturing;
+  const label = await invoke("trigger_label", { trigger: event.trigger });
+  card.binds[action] = { trigger: event.trigger, mode: "hold", label };
+  endCapture();
+  await pushBinds(card);
+  say("status.bindSet", { action: actionName(action), key: label });
+}
+
+async function onBindState(event) {
+  const engaged = event.event === "engaged";
+
+  // F8 reports through the `restored` event, which carries the real count.
+  if (event.action === "panic") return;
+
+  if (event.action === "master") {
+    // The hook already flipped the switch; only the toolbar needs telling.
+    masterOn = !engaged;
+    document.querySelector('[data-tool="master"]').setAttribute("aria-pressed", String(masterOn));
+    say(masterOn ? "status.masterOn" : "status.masterOff", null, masterOn ? "info" : "warn");
+    return;
+  }
+
+  markEngaged(event.action, engaged);
+  say(engaged ? "status.engaged" : "status.released", { action: actionName(event.action) });
+}
+
+function markEngaged(action, on) {
+  for (const card of cards) {
+    const row = bindRow(card, action);
+    if (row) row.dataset.engaged = String(on);
+  }
 }
 
 window.addEventListener("resize", () => {
