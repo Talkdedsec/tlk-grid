@@ -1,0 +1,53 @@
+:root {
+  --bg: #040509;
+  --bar: #14171c;
+  --card: #171c22;
+  --card-head: #202529;
+  --input: #000005;
+  --chip: #1e252f;
+  --chip-hover: #273040;
+  --line: #262c34;
+  --line-soft: #1b2027;
+
+  --text: #cfd6dd;
+  --dim: #8b949e;
+  --faint: #5d6773;
+
+  --accent: #00cb91;
+  --accent-soft: #0e3d37;
+  --accent-text: #7fe6c4;
+  --danger: #c8455f;
+  --danger-soft: #2e1720;
+
+  --ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
+
+  --r: 6px;
+  --bar-h: 48px;
+  --status-h: 26px;
+  --card-w: 486px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+  font-size: 13px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a323c; border-radius: 5px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: #39434f; }

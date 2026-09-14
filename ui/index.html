@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tlk-grid</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>TLK-GRID
+    <small data-i18n="app.subtitle">manager</small>
+  </div>
+  <nav class="tools">
+    <button class="tool" data-tool="lang" data-i18n-title="tool.lang" title="Interface language">EN</button>
+    <button class="tool" data-tool="zoom-scroll" data-stage="bind" data-i18n-title="tool.zoomScroll" title="Wheel adjusts the zoom factor">~</button>
+    <button class="tool" data-tool="crosshair" data-stage="overlay" data-i18n-title="tool.crosshair" title="Crosshair">+</button>
+    <button class="tool" data-tool="scope" data-stage="overlay" data-i18n-title="tool.scope" title="Scope lens">o</button>
+    <button class="tool" data-tool="layers" data-stage="overlay" data-i18n-title="tool.layers" title="Layers">≡</button>
+    <button class="tool" data-tool="curvefx" data-stage="fx" data-i18n-title="tool.curvefx" title="CurveFX">(</button>
+    <button class="tool" data-tool="master" data-stage="bind" data-i18n-title="tool.master" title="Master control">!</button>
+    <button class="tool" data-tool="presets" data-stage="profile" data-i18n-title="tool.presets" title="Preset library">▤</button>
+    <button class="tool" data-tool="help" data-stage="docs" data-i18n-title="tool.help" title="Guide">?</button>
+    <button class="tool" data-tool="panic" data-i18n-title="tool.panic" title="Restore every window (F8)">⟲</button>
+  </nav>
+</header>
+
+<main class="canvas">
+  <button class="add-card" type="button">
+    <span class="plus">+</span>
+    <span data-i18n="add.window">ADD WINDOW</span>
+  </button>
+</main>
+
+<footer class="statusbar" data-tone="info" role="status" aria-live="polite"></footer>
+
+<template id="card-template">
+  <article class="card">
+    <header class="card-head">
+      <span class="badge card-index">WINDOW #1</span>
+      <h2 data-i18n="card.title">Window setup</h2>
+      <span class="badge mode card-mode">WINDOW</span>
+      <button class="icon-btn card-close" type="button" data-i18n-aria="card.close" aria-label="Release this window">×</button>
+    </header>
+
+    <div class="card-body">
+
+      <section class="section">
+        <h3 data-i18n="target.title">Target window</h3>
+        <p class="hint" data-i18n="target.hint"></p>
+        <div class="row">
+          <select class="target-select grow"></select>
+          <button class="btn target-refresh" type="button" data-i18n-title="target.refresh" title="Refresh the list">⟳</button>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3 data-i18n="monitor.title">Monitor native resolution</h3>
+        <p class="hint" data-i18n="monitor.hint"></p>
+        <div class="row">
+          <select class="monitor-select grow"></select>
+        </div>
+        <div class="row">
+          <input class="monitor-w" type="text" readonly>
+          <span style="color:var(--faint)">×</span>
+          <input class="monitor-h" type="text" readonly>
+        </div>
+      </section>
+
+      <section class="section">
+        <h3 data-i18n="layout.title">Window position &amp; size</h3>
+        <p class="hint" data-i18n="layout.hint"></p>
+
+        <div class="chips">
+          <button class="chip" type="button" data-anchor="center" data-i18n="layout.center">Center</button>
+          <button class="chip" type="button" data-anchor="left" data-i18n="layout.left">Left</button>
+          <button class="chip" type="button" data-anchor="right" data-i18n="layout.right">Right</button>
+          <button class="chip" type="button" data-anchor="top" data-i18n="layout.top">Top</button>
+          <button class="chip" type="button" data-anchor="bottom" data-i18n="layout.bottom">Bottom</button>
+          <button class="chip" type="button" data-divisions="4" aria-pressed="false">×4</button>
+          <button class="chip" type="button" data-divisions="6" aria-pressed="false">×6</button>
+          <button class="chip" type="button" data-divisions="8" aria-pressed="false">×8</button>
+          <button class="chip" type="button" data-divisions="10" aria-pressed="false">×10</button>
+        </div>
+
+        <div class="preview"></div>
+
+        <div class="row geom" style="margin-top:10px">
+          <label class="field"><span>X</span><input class="geom-x" type="number"></label>
+          <label class="field"><span>Y</span><input class="geom-y" type="number"></label>
+          <label class="field"><span>W</span><input class="geom-w" type="number"></label>
+          <label class="field"><span>H</span><input class="geom-h" type="number"></label>
+        </div>
+
+        <label class="check">
+          <input class="borderless" type="checkbox">
+          <span data-i18n="layout.borderless">Borderless</span>
+        </label>
+
+        <span class="result" hidden></span>
+      </section>
+
+    </div>
+
+    <button class="apply" type="button" data-i18n="apply" disabled>APPLY</button>
+  </article>
+</template>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
