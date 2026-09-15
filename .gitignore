@@ -6,4 +6,4 @@ node_modules
 *.ilk
 *.exp
 Thumbs.db
-/uygulama/gen
+/app/gen
