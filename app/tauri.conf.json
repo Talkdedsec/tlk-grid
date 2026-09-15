@@ -21,6 +21,34 @@
         "backgroundColor": "#040509",
         "resizable": true,
         "center": true
+      },
+      {
+        "label": "crosshair",
+        "title": "tlk-grid — Crosshair",
+        "url": "crosshair.html",
+        "width": 560,
+        "height": 760,
+        "minWidth": 380,
+        "minHeight": 420,
+        "theme": "Dark",
+        "backgroundColor": "#040509",
+        "visible": false,
+        "center": true,
+        "resizable": true
+      },
+      {
+        "label": "scope",
+        "title": "tlk-grid — Scope",
+        "url": "scope.html",
+        "width": 560,
+        "height": 680,
+        "minWidth": 380,
+        "minHeight": 420,
+        "theme": "Dark",
+        "backgroundColor": "#040509",
+        "visible": false,
+        "center": true,
+        "resizable": true
       }
     ],
     "security": {
@@ -29,8 +57,14 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.ico"],
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/icon.ico"
+    ],
     "shortDescription": "Window layout, zoom and overlays for games",
     "longDescription": "tlk-grid resizes, positions and zooms game windows without touching the game's internal rendering resolution. Open source, Win32 and DWM only."
   }

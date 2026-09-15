@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tlk-grid — Scope</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="module">
+
+<header class="module-bar">
+  <span class="dot"></span>TLK-GRID
+  <small>scope</small>
+</header>
+
+<main class="module-body">
+  <div class="module-card">
+    <div class="module-head">
+      <span class="badge">SCOPE</span>
+      <h1 data-i18n="scope.title">Magnify the middle, not the screen</h1>
+    </div>
+
+    <div class="section">
+      <h3 data-i18n="scope.appearance">Appearance</h3>
+
+      <div class="control">
+        <div class="label">
+          <b data-i18n="scope.enable">Use the lens</b>
+          <span data-i18n="scope.enableHint"></span>
+        </div>
+        <button class="switch enabled" type="button" role="switch" aria-checked="false"></button>
+      </div>
+
+      <div class="control">
+        <div class="label">
+          <b data-i18n="scope.size">Lens size</b>
+          <span data-i18n="scope.sizeHint"></span>
+        </div>
+        <input class="size" type="range" min="100" max="1200" step="10" value="650">
+        <span class="value size-value">650 px</span>
+      </div>
+
+      <h3 style="margin-top:14px" data-i18n="scope.backdrop">Around the lens</h3>
+      <div class="pair">
+        <button class="btn backdrop" type="button" data-see-through="false" data-i18n="scope.black">BLACK</button>
+        <button class="btn backdrop" type="button" data-see-through="true" aria-pressed="true" data-i18n="scope.seeThrough">SEE-THROUGH</button>
+      </div>
+      <p class="hint backdrop-note" style="margin-top:8px"></p>
+    </div>
+
+    <ul class="behaviour">
+      <li data-i18n="scope.b1"></li>
+      <li data-i18n="scope.b2"></li>
+      <li data-i18n="scope.b3"></li>
+      <li data-i18n="scope.b4"></li>
+    </ul>
+  </div>
+
+  <button class="commit save" type="button" data-i18n="module.save">SAVE &amp; APPLY</button>
+</main>
+
+<footer class="statusbar" data-tone="info" role="status" aria-live="polite"></footer>
+
+<script type="module" src="js/scope.js"></script>
+</body>
+</html>
