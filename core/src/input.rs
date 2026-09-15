@@ -330,7 +330,8 @@ mod imp {
             }))
             .is_err()
         {
-            return Err(Error::win32("SetWindowsHookEx", -1));
+            // The hooks are process-wide, so a second set would fight the first.
+            return Err(Error::AlreadyRunning("input"));
         }
 
         let (ready_tx, ready_rx) = channel::<crate::Result<u32>>();
