@@ -95,19 +95,39 @@ sürece uygulanamıyor; arayüz bunu yazıyor, taklit etmiyor.
 Henüz **gerçek bir oyunla** doğrulanmadı: tuşun oyuna sızmaması (yutma) ve
 Alt-Tab nöbetçisinin sahada davranışı. İkisinin de birim testi var, saha testi yok.
 
-## Sırada — Faz 4 (katmanlar)
+**Faz 4 — kısmen bitti.** Katman motoru ve üstündeki üç modül çalışıyor.
+- `core/layers.rs` — tek iplikte N overlay penceresi. Mirror (canlı DWM kopyası,
+  istenirse `rcSource` ile kırpılmış), Fill (siyah bant), Picture (bitmap, GIF ise
+  animasyonlu). Mirror ve Fill sabit alfa; Picture `UpdateLayeredWindow`. İkisini
+  ayrı pencerelerde tutmak ikisinin aynı anda doğru olmasını sağlıyor.
+- `core/picture.rs` — PNG/JPG/GIF yükleme, premultiplied BGRA, kutu filtreli
+  ölçekleme.
+- `app/overlays.rs` — geometri: lens karesi, kırpılacak bölge, nişangâh ölçeği.
+- Siyah bantlar, dürbün lensi (SİYAH / SAYDAM çevre) ve nişangâh; nişangâh
+  app-data'ya kopyalanıp ayarlarıyla birlikte sonraki açılışta geri geliyor.
+- Ayarlar pencereleri (nişangâh, dürbün) config'de tanımlı, gizli başlıyor,
+  araç çubuğu yalnız gösteriyor.
 
-Siyah bantlar, dört yönlü özel overlay (PNG/JPG/GIF), nişangâh (yükleme + çizim
-tuvali + tekerlekle boyut), dürbün lensi, Layers bölge seçici ve HUD pencereleri.
-Hepsi `overlay.rs`'in üstüne biniyor: dürbün ve Layers, `rcSource` verilmiş
-ikinci ve üçüncü thumbnail'den ibaret.
+Kalan: çerçeve çevresine özel görseller (ART slotları hazır, arayüzü yok) ve
+kullanıcının seçtiği HUD katmanları (bölge seçici gerekiyor).
 
-Kaynak uygulamanın yama notlarından gelen davranış ayrıntıları aşağıda —
-özellikle dürbün bind'i ve tekerlek adımları.
+## Neyin kanıtı var (Faz 4)
 
-**Kabul:** radar bölgesi ayrı bir pencereye alınıp ekranın istenen köşesine
-taşınabiliyor; dürbün lensi zoom sırasında merkezde kalıyor ve nişangâh onun da
-üstünde.
+| İddia | Kanıt |
+| --- | --- |
+| `rcSource` kırpması çalışıyor | `layers_smoke`: aynı pencerenin iki farklı bölgesi ekranda farklı görüntü veriyor (120 / 287 ayrı renk) |
+| Ayarlar pencereleri açılıyor | Ekrandan yakalandı: dürbün penceresi Türkçe, anahtar/kaydırıcı/çift düğme ve durum satırı yerinde |
+| Durum yönetimi | Sayfalar açılışta komut çağırdığı için durum builder seviyesinde kaydedildi; "state not managed" hatası giderildi |
+
+## Sırada
+
+1. **Gerçek bir oyunla uçtan uca test.** Hiçbir şey bir maç içinde denenmedi.
+   Tuşun oyuna sızmaması ve overlay'in oyun üstünde doğru durması sahada
+   doğrulanmadı.
+2. **Profiller (Faz 7'den öne alındı).** Şu an her açılışta hedef, bağlama,
+   katsayı ve yerleşim baştan kuruluyor. Demo dışına çıkmanın önündeki asıl engel bu.
+3. Faz 4'ün kalanı: çerçeve görselleri + HUD katmanları.
+4. Faz 5 CurveFX, Faz 6 SQUASH.
 
 ## Kaynak uygulamanın yama notlarından çıkanlar
 
