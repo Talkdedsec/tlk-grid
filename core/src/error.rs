@@ -10,6 +10,8 @@ pub enum Error {
     NoSuchMonitor(String),
     #[error("cannot read the image at {0}")]
     NoSuchImage(String),
+    #[error("the {0} thread is already running")]
+    AlreadyRunning(&'static str),
     #[error("{context}: {source}")]
     Win32 {
         context: &'static str,
