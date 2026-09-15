@@ -1,0 +1,69 @@
+name: Bug report
+description: Something behaves differently from what the README says it does.
+labels: [bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nine bug reports in ten come down to the game's window mode. tlk-grid
+        works with **Windowed** and **Borderless Windowed**; exclusive
+        fullscreen is not supported. Please check that first.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      placeholder: |
+        1. Pick the game window
+        2. Bind Resize to RMB, factor 2
+        3. Hold RMB in game
+    validations:
+      required: true
+
+  - type: input
+    id: game
+    attributes:
+      label: Game and window mode
+      placeholder: Counter-Strike 2, borderless windowed
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows build
+      description: Run `winver`, or press Win+R and type it.
+      placeholder: Windows 11 26200
+    validations:
+      required: true
+
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU
+      placeholder: RTX 4060, driver 566.36
+    validations:
+      required: true
+
+  - type: dropdown
+    id: method
+    attributes:
+      label: Zoom method in use
+      options: [THUMBNAIL, WINDOW, STRETCH, DPI, not using zoom]
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: A short clip says more than a paragraph for overlay problems.

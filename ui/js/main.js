@@ -6,6 +6,9 @@ const listen = window.__TAURI__.event.listen;
 /** Actions a window card can bind. Scope and crosshair get their own windows. */
 const CARD_ACTIONS = ["resize", "black-bars"];
 const ACTION_LABEL = { resize: "binds.resize", "black-bars": "binds.blackBars" };
+
+/** Toolbar buttons that reveal a settings window of the same label. */
+const MODULE_WINDOWS = ["crosshair", "scope"];
 /** Only Resize carries a zoom factor; Black Bars is a plain on/off overlay. */
 const FACTOR_ACTIONS = new Set(["resize"]);
 
@@ -101,6 +104,12 @@ function wireToolbar() {
   masterButton.setAttribute("aria-pressed", String(masterOn));
   masterButton.addEventListener("click", () => setMaster(!masterOn));
 
+  for (const tool of MODULE_WINDOWS) {
+    const button = document.querySelector(`[data-tool="${tool}"]`);
+    button.removeAttribute("data-stage");
+    button.addEventListener("click", () => openModule(tool));
+  }
+
   for (const tool of document.querySelectorAll(".tool[data-stage]")) {
     tool.addEventListener("click", () =>
       say("status.notBuilt", { module: tool.title }, "warn")
@@ -119,6 +128,22 @@ function wireToolbar() {
   addCard.addEventListener("click", addWindowCard);
   // F8 is handled by the input hook, so it works with the app in the
   // background too. Nothing to bind here.
+}
+
+/** The settings windows are declared in the config and start hidden, so the
+ * toolbar only has to reveal one. Creating them on demand would put window
+ * creation on the click path for no gain. */
+async function openModule(label) {
+  try {
+    const { WebviewWindow } = window.__TAURI__.webviewWindow;
+    const win = await WebviewWindow.getByLabel(label);
+    if (!win) return say("status.notBuilt", { module: t(`tool.${label}`) }, "warn");
+    await win.show();
+    await win.unminimize();
+    await win.setFocus();
+  } catch (err) {
+    reportFailure(err);
+  }
 }
 
 async function setMaster(on) {

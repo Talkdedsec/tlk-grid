@@ -1,12 +1,17 @@
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{Manager, State};
 use tlkgrid_core::bind::{key_label, Action, Bind, Trigger};
 use tlkgrid_core::display::{self, Monitor};
 use tlkgrid_core::frame::{self, Border};
 use tlkgrid_core::input::Input;
+use tlkgrid_core::layers::Layers;
 use tlkgrid_core::layout::{self, Anchor, AspectPreset, Cell, Rect};
+use tlkgrid_core::picture;
 use tlkgrid_core::target::{self, TargetWindow};
 use tlkgrid_core::zoom::{self, Method};
+
+use crate::hotkeys;
+use crate::overlays::{self, Crosshair, LensBackdrop, Overlays, Scope};
 
 use crate::locale;
 use crate::session::Session;
@@ -244,4 +249,169 @@ pub fn zoom_shortcuts() -> [f64; 3] {
 #[tauri::command]
 pub fn zoom_destination(base: Rect, factor: f64) -> Rect {
     zoom::destination(base, factor)
+}
+
+// -------------------------------------------------------------- crosshair
+
+/// Where a crosshair image is kept once chosen, so it survives a restart the
+/// way the guide promises.
+fn crosshair_path(app: &tauri::AppHandle) -> Answer<std::path::PathBuf> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|_| "no app data directory".to_string())?;
+    std::fs::create_dir_all(&dir).map_err(fail)?;
+    Ok(dir.join("crosshair.png"))
+}
+
+#[derive(Serialize)]
+pub struct CrosshairState {
+    pub loaded: bool,
+    pub visible: bool,
+    pub scale_percent: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
+fn crosshair_state_of(overlays: &Overlays) -> CrosshairState {
+    match overlays.crosshair() {
+        Some(crosshair) => {
+            let (width, height) = crosshair.picture.size();
+            CrosshairState {
+                loaded: true,
+                visible: crosshair.visible,
+                scale_percent: crosshair.scale_percent,
+                width,
+                height,
+            }
+        }
+        None => CrosshairState {
+            loaded: false,
+            visible: false,
+            scale_percent: 100,
+            width: 0,
+            height: 0,
+        },
+    }
+}
+
+/// The picture arrives as bytes rather than a path: a webview file input never
+/// hands out a real path, and copying it into app data is what makes the choice
+/// stick between sessions anyway.
+#[tauri::command]
+pub fn set_crosshair_image(
+    app: tauri::AppHandle,
+    overlays: State<'_, Overlays>,
+    bytes: Vec<u8>,
+) -> Answer<CrosshairState> {
+    let path = crosshair_path(&app)?;
+    std::fs::write(&path, &bytes).map_err(fail)?;
+    let picture = picture::load(&path).map_err(fail)?;
+
+    let previous = overlays.crosshair();
+    let crosshair = Crosshair {
+        picture: std::sync::Arc::new(picture),
+        source: path,
+        scale_percent: previous.as_ref().map_or(100, |c| c.scale_percent),
+        visible: true,
+    };
+    crosshair.save();
+    overlays.set_crosshair(Some(crosshair.clone()));
+    hotkeys::repaint_crosshair(&app, &crosshair);
+    Ok(crosshair_state_of(&overlays))
+}
+
+#[tauri::command]
+pub fn set_crosshair_scale(
+    app: tauri::AppHandle,
+    overlays: State<'_, Overlays>,
+    percent: u32,
+) -> Answer<CrosshairState> {
+    let Some(mut crosshair) = overlays.crosshair() else {
+        return Err("no crosshair image loaded".into());
+    };
+    crosshair.scale_percent = percent.clamp(overlays::CROSSHAIR_MIN, overlays::CROSSHAIR_MAX);
+    crosshair.save();
+    overlays.set_crosshair(Some(crosshair.clone()));
+    hotkeys::repaint_crosshair(&app, &crosshair);
+    Ok(crosshair_state_of(&overlays))
+}
+
+#[tauri::command]
+pub fn toggle_crosshair(
+    app: tauri::AppHandle,
+    overlays: State<'_, Overlays>,
+    visible: bool,
+) -> Answer<CrosshairState> {
+    let Some(mut crosshair) = overlays.crosshair() else {
+        return Err("no crosshair image loaded".into());
+    };
+    crosshair.visible = visible;
+    crosshair.save();
+    overlays.set_crosshair(Some(crosshair.clone()));
+    hotkeys::repaint_crosshair(&app, &crosshair);
+    Ok(crosshair_state_of(&overlays))
+}
+
+#[tauri::command]
+pub fn clear_crosshair(overlays: State<'_, Overlays>, layers: State<'_, Layers>) -> CrosshairState {
+    overlays.set_crosshair(None);
+    overlays_hide_crosshair(&layers);
+    crosshair_state_of(&overlays)
+}
+
+fn overlays_hide_crosshair(layers: &Layers) {
+    overlays::hide_crosshair(layers);
+}
+
+#[tauri::command]
+pub fn crosshair_state(overlays: State<'_, Overlays>) -> CrosshairState {
+    crosshair_state_of(&overlays)
+}
+
+// ------------------------------------------------------------------ scope
+
+#[derive(Serialize)]
+pub struct ScopeState {
+    pub enabled: bool,
+    pub size: i32,
+    pub see_through: bool,
+}
+
+#[tauri::command]
+pub fn set_scope(
+    overlays: State<'_, Overlays>,
+    layers: State<'_, Layers>,
+    enabled: bool,
+    size: i32,
+    see_through: bool,
+) -> ScopeState {
+    let scope = Scope {
+        enabled,
+        size: size.clamp(overlays::LENS_MIN, overlays::LENS_MAX),
+        backdrop: if see_through {
+            LensBackdrop::SeeThrough
+        } else {
+            LensBackdrop::Black
+        },
+    };
+    overlays.set_scope(scope);
+    if !enabled {
+        overlays::hide_scope(&layers);
+    }
+    ScopeState {
+        enabled: scope.enabled,
+        size: scope.size,
+        see_through,
+    }
+}
+
+#[tauri::command]
+pub fn scope_state(overlays: State<'_, Overlays>) -> ScopeState {
+    let scope = overlays.scope();
+    ScopeState {
+        enabled: scope.enabled,
+        size: scope.size,
+        see_through: scope.backdrop == LensBackdrop::SeeThrough,
+    }
 }

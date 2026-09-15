@@ -8,6 +8,8 @@ pub enum Error {
     WindowGone(isize),
     #[error("no monitor matches {0}")]
     NoSuchMonitor(String),
+    #[error("cannot read the image at {0}")]
+    NoSuchImage(String),
     #[error("{context}: {source}")]
     Win32 {
         context: &'static str,

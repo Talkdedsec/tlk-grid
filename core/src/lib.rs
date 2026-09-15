@@ -12,8 +12,9 @@ pub mod display;
 pub mod error;
 pub mod frame;
 pub mod input;
+pub mod layers;
 pub mod layout;
-pub mod overlay;
+pub mod picture;
 pub mod target;
 pub mod zoom;
 
