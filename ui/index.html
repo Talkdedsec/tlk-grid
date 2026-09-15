@@ -9,6 +9,7 @@
 </head>
 <body>
 
+<div class="head">
 <header class="topbar">
   <div class="brand">
     <span class="dot"></span>TLK-GRID
@@ -24,9 +25,21 @@
     <button class="tool" data-tool="master" data-stage="bind" data-i18n-title="tool.master" title="Master control">!</button>
     <button class="tool" data-tool="presets" data-stage="profile" data-i18n-title="tool.presets" title="Preset library">▤</button>
     <button class="tool" data-tool="help" data-stage="docs" data-i18n-title="tool.help" title="Guide">?</button>
+    <button class="tool" data-tool="load" data-i18n-title="tool.load" title="Load profile">▼</button>
+    <button class="tool" data-tool="save" data-i18n-title="tool.save" title="Save profile">▲</button>
     <button class="tool" data-tool="panic" data-i18n-title="tool.panic" title="Restore every window (F8)">⟲</button>
   </nav>
 </header>
+
+<section class="profiles" hidden>
+  <p class="hint" data-i18n="profiles.hint"></p>
+  <div class="row">
+    <input class="profile-name grow" type="text" data-i18n-placeholder="profiles.namePlaceholder">
+    <button class="btn profile-save" type="button" data-i18n="profiles.save">Save</button>
+  </div>
+  <div class="profile-list"></div>
+</section>
+</div>
 
 <main class="canvas">
   <button class="add-card" type="button">

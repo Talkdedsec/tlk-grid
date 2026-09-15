@@ -15,6 +15,7 @@ pub mod input;
 pub mod layers;
 pub mod layout;
 pub mod picture;
+pub mod profile;
 pub mod target;
 pub mod zoom;
 

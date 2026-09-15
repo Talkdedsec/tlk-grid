@@ -17,6 +17,9 @@ const addCard = document.querySelector(".add-card");
 const statusbar = document.querySelector(".statusbar");
 const cardTemplate = document.querySelector("#card-template");
 const bindTemplate = document.querySelector("#bind-template");
+const panel = document.querySelector(".profiles");
+const profileName = document.querySelector(".profile-name");
+const profileList = document.querySelector(".profile-list");
 
 /** Which bind field is armed, if any: { card, action }. */
 let capturing = null;
@@ -69,8 +72,16 @@ async function boot() {
     });
   });
   wireToolbar();
-  addWindowCard();
-  say("status.ready");
+
+  const previous = await invoke("restore_session").catch(() => null);
+  if (previous && previous.profile.windows.length) {
+    await applyProfile(previous);
+    say("profiles.restored");
+  } else {
+    addWindowCard();
+    say("status.ready");
+  }
+  refreshProfileList();
 }
 
 /* --------------------------------------------------------------- toolbar */
@@ -103,6 +114,21 @@ function wireToolbar() {
   masterButton.removeAttribute("data-stage");
   masterButton.setAttribute("aria-pressed", String(masterOn));
   masterButton.addEventListener("click", () => setMaster(!masterOn));
+
+  for (const tool of ["load", "save"]) {
+    const button = document.querySelector(`[data-tool="${tool}"]`);
+    button.addEventListener("click", () => {
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) {
+        refreshProfileList();
+        if (tool === "save") profileName.focus();
+      }
+    });
+  }
+  document.querySelector(".profile-save").addEventListener("click", saveProfile);
+  profileName.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") saveProfile();
+  });
 
   for (const tool of MODULE_WINDOWS) {
     const button = document.querySelector(`[data-tool="${tool}"]`);
@@ -180,6 +206,7 @@ function addWindowCard() {
     divisions: 0,
     borderless: false,
     pin: false,
+    target: null,
     method: "thumbnail",
     factor: "1,5",
     binds: Object.fromEntries(CARD_ACTIONS.map((action) => [action, null])),
@@ -215,6 +242,7 @@ function wireCard(card) {
   q(card, ".target-select").addEventListener("change", (event) => {
     const handle = Number(event.target.value);
     card.handle = Number.isFinite(handle) && handle !== 0 ? handle : null;
+    card.target = (card.available ?? []).find((w) => w.handle === card.handle) ?? null;
     onTargetPicked(card);
   });
 
@@ -323,8 +351,10 @@ async function refreshTargets(card) {
     })
   );
 
+  card.available = windows;
   if (card.handle && windows.some((w) => w.handle === card.handle)) {
     select.value = String(card.handle);
+    card.target = windows.find((w) => w.handle === card.handle) ?? card.target;
   } else if (card.handle) {
     card.handle = null;
     say("status.gone", null, "warn");
@@ -423,6 +453,7 @@ async function applyCard(card) {
     card.rect = placed;
     syncCard(card);
     await pushZoom(card);
+    rememberSession();
     say("status.applied", placed);
   } catch (err) {
     reportFailure(err);
@@ -704,6 +735,7 @@ async function pushBinds(card) {
   }));
   await invoke("set_bind_target", { handle: card.handle });
   await invoke("set_binds", { binds });
+  rememberSession();
 }
 
 function cardFor(handle) {
@@ -769,6 +801,170 @@ function markEngaged(action, on) {
   for (const card of cards) {
     const row = bindRow(card, action);
     if (row) row.dataset.engaged = String(on);
+  }
+}
+
+/* --------------------------------------------------------------- profiles */
+
+let sessionTimer = null;
+
+/** Writing on every keystroke would hammer the disk; a short pause is enough. */
+function rememberSession() {
+  clearTimeout(sessionTimer);
+  sessionTimer = setTimeout(() => {
+    invoke("remember_session", { profile: collectProfile("session") }).catch(() => {});
+  }, 400);
+}
+
+function collectProfile(name) {
+  return {
+    version: 1,
+    name,
+    language: language(),
+    wheel_adjusts: wheelAdjusts,
+    scope: { enabled: false, size: 650, see_through: true },
+    crosshair_scale: null,
+    windows: cards.filter((card) => card.rect).map(cardToSetup),
+  };
+}
+
+function cardToSetup(card) {
+  const factor = Number(String(card.factor).replace(",", ".")) || 1;
+  return {
+    process: card.target?.process ?? "",
+    title: card.target?.title ?? "",
+    occurrence: card.target?.occurrence ?? null,
+    monitor: card.monitor?.device ?? "",
+    rect: card.rect,
+    borderless: card.borderless,
+    pin: card.pin,
+    method: card.method,
+    factor,
+    binds: CARD_ACTIONS.filter((action) => card.binds[action]).map((action) => ({
+      action,
+      trigger: card.binds[action].trigger,
+      mode: card.binds[action].mode,
+      swallow: true,
+    })),
+  };
+}
+
+/** Rebuilds the canvas from a profile whose cards have already been matched
+ * against the windows that are open now. */
+async function applyProfile(resolved) {
+  for (const card of [...cards]) {
+    card.el.remove();
+    cards.splice(cards.indexOf(card), 1);
+  }
+  nextCardIndex = 1;
+
+  const setups = resolved.profile.windows;
+  for (let index = 0; index < setups.length; index += 1) {
+    const setup = setups[index];
+    const found = resolved.windows[index] ?? {};
+    const card = addWindowCard();
+
+    card.rect = setup.rect;
+    card.borderless = setup.borderless;
+    card.pin = setup.pin;
+    card.method = setup.method;
+    card.factor = String(setup.factor).replace(".", ",");
+    card.monitor = monitors.find((m) => m.device === setup.monitor) ?? card.monitor;
+    for (const bind of setup.binds ?? []) {
+      card.binds[bind.action] = {
+        trigger: bind.trigger,
+        mode: bind.mode,
+        label: await invoke("trigger_label", { trigger: bind.trigger }),
+      };
+    }
+
+    q(card, ".borderless").checked = card.borderless;
+    q(card, ".pin").checked = card.pin;
+    q(card, ".bind-factor").value = card.factor;
+    fillMonitors(card);
+    refreshCardLabels(card);
+
+    if (found.handle) {
+      card.handle = found.handle;
+      await refreshTargets(card);
+      q(card, ".target-select").value = String(found.handle);
+      await pushBinds(card);
+      await pushZoom(card);
+      if (found.quality === "same-process") {
+        say("profiles.weakMatch", { name: found.label ?? setup.process }, "warn");
+      }
+    }
+    syncCard(card);
+  }
+
+  if (!cards.length) addWindowCard();
+}
+
+async function refreshProfileList() {
+  let names = [];
+  try {
+    names = await invoke("list_profiles");
+  } catch (err) {
+    return reportFailure(err);
+  }
+
+  profileList.dataset.empty = t("profiles.none");
+  profileList.replaceChildren(
+    ...names.map((name) => {
+      const row = document.createElement("div");
+      row.className = "saved";
+
+      const open = document.createElement("button");
+      open.type = "button";
+      open.className = "open";
+      open.textContent = name;
+      open.addEventListener("click", () => loadProfile(name));
+
+      const drop = document.createElement("button");
+      drop.type = "button";
+      drop.className = "drop";
+      drop.textContent = "×";
+      drop.title = t("profiles.delete");
+      drop.addEventListener("click", () => deleteProfile(name));
+
+      row.append(open, drop);
+      return row;
+    })
+  );
+}
+
+async function loadProfile(name) {
+  try {
+    const resolved = await invoke("load_profile", { name });
+    await applyProfile(resolved);
+    const matched = resolved.windows.filter((w) => w.handle).length;
+    say("profiles.loaded", { name, matched, total: resolved.windows.length });
+    rememberSession();
+  } catch (err) {
+    reportFailure(err);
+  }
+}
+
+async function saveProfile() {
+  const name = profileName.value.trim();
+  if (!name) return say("profiles.needsName", null, "warn");
+  try {
+    await invoke("save_profile", { profile: collectProfile(name) });
+    profileName.value = "";
+    await refreshProfileList();
+    say("profiles.saved", { name });
+  } catch (err) {
+    reportFailure(err);
+  }
+}
+
+async function deleteProfile(name) {
+  try {
+    await invoke("delete_profile", { name });
+    await refreshProfileList();
+    say("profiles.deleted", { name });
+  } catch (err) {
+    reportFailure(err);
   }
 }
 

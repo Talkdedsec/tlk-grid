@@ -7,11 +7,13 @@ use tlkgrid_core::input::Input;
 use tlkgrid_core::layers::Layers;
 use tlkgrid_core::layout::{self, Anchor, AspectPreset, Cell, Rect};
 use tlkgrid_core::picture;
+use tlkgrid_core::profile::Profile;
 use tlkgrid_core::target::{self, TargetWindow};
 use tlkgrid_core::zoom::{self, Method};
 
 use crate::hotkeys;
 use crate::overlays::{self, Crosshair, LensBackdrop, Overlays, Scope};
+use crate::profiles;
 
 use crate::locale;
 use crate::session::Session;
@@ -413,5 +415,51 @@ pub fn scope_state(overlays: State<'_, Overlays>) -> ScopeState {
         enabled: scope.enabled,
         size: scope.size,
         see_through: scope.backdrop == LensBackdrop::SeeThrough,
+    }
+}
+
+// ---------------------------------------------------------------- profiles
+
+/// Saving is the whole point of a name: an empty one would overwrite the
+/// session file and silently take the user's working state with it.
+#[tauri::command]
+pub fn save_profile(app: tauri::AppHandle, profile: Profile) -> Answer<Vec<String>> {
+    if profile.name.trim().is_empty() {
+        return Err("a profile needs a name".into());
+    }
+    profiles::write(&app, &profile)?;
+    profiles::names(&app)
+}
+
+#[tauri::command]
+pub fn load_profile(app: tauri::AppHandle, name: String) -> Answer<profiles::Resolved> {
+    profiles::resolve(profiles::read(&app, &name)?)
+}
+
+#[tauri::command]
+pub fn list_profiles(app: tauri::AppHandle) -> Answer<Vec<String>> {
+    profiles::names(&app)
+}
+
+#[tauri::command]
+pub fn delete_profile(app: tauri::AppHandle, name: String) -> Answer<Vec<String>> {
+    profiles::remove(&app, &name)?;
+    profiles::names(&app)
+}
+
+/// Written every time the user changes something, so closing the app is never
+/// the same as losing the setup. Failures are swallowed: a full disk should not
+/// stop someone mid-game.
+#[tauri::command]
+pub fn remember_session(app: tauri::AppHandle, profile: Profile) {
+    let _ = profiles::save_session(&app, &profile);
+}
+
+/// What the manager rebuilds its cards from at startup.
+#[tauri::command]
+pub fn restore_session(app: tauri::AppHandle) -> Answer<Option<profiles::Resolved>> {
+    match profiles::read_session(&app) {
+        Some(profile) => profiles::resolve(profile).map(Some),
+        None => Ok(None),
     }
 }

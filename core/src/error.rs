@@ -12,6 +12,8 @@ pub enum Error {
     NoSuchImage(String),
     #[error("the {0} thread is already running")]
     AlreadyRunning(&'static str),
+    #[error("this profile cannot be read: {0}")]
+    BadProfile(String),
     #[error("{context}: {source}")]
     Win32 {
         context: &'static str,
