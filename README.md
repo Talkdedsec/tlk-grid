@@ -31,6 +31,10 @@ Open source, Windows only. [Türkçe](README.tr.md)
   real window instead, and put it back when you let go.
 - **Hold the layout** — pin a window and its layout is re-asserted when the game
   moves it back on Alt-Tab.
+- **Picks up where you left off** — the setup is remembered as you work and
+  comes back next launch. Save it under a name to keep more than one. A profile
+  finds its windows again by executable, so it survives a restart and a changed
+  window title.
 - **Put it back** — F8 restores every window tlk-grid has touched to the style
   and rect it had before, from anywhere.
 
@@ -80,7 +84,7 @@ cargo build --release           # target/release/tlk-grid.exe, one file
 | 4 | Black bars, custom overlays, crosshair, scope lens, HUD layers | next |
 | 5 | CurveFX: curved screen, CRT, four motion-blur modes | |
 | 6 | SQUASH: NvAPI custom display modes | |
-| 7 | Profiles, preset library, language switch | partial (language done) |
+| 7 | Profiles, preset library, language switch | partial (profiles and language done) |
 | 8 | Guide, diagnostics, release packaging | |
 
 ## Interface language

@@ -28,6 +28,18 @@ yet, so everything below sits under Unreleased.
   a custom crosshair that survives a restart.
 - Two interface languages: English by default, Turkish on a Turkish Windows,
   switchable live from the toolbar.
+- Profiles: the setup is written as you work and restored on the next launch,
+  and can be saved under a name. Cards find their windows again by executable
+  rather than by handle, so a restart or a changed window title does not lose
+  them.
+
+### Verified against a live desktop
+- A bound key really is kept from the focused window, the focus gate really does
+  let it through when the bind points elsewhere, and an unbound key arrives
+  untouched (`core/tests/input_smoke.rs`).
+- DWM draws the mirrored window onto a click-through layered overlay, magnifies
+  it when the destination runs past the edges, and crops it when a source region
+  is given (`core/tests/layers_smoke.rs`).
 
 ### Known gaps
 - DPI zoom is listed but does nothing at runtime: per-application DPI is a
@@ -35,3 +47,5 @@ yet, so everything below sits under Unreleased.
 - Custom artwork around the letterbox and user-picked HUD layers are designed
   but not built.
 - CurveFX and SQUASH are not started.
+- Nothing has been played through a full match yet. The pieces are tested
+  individually against real windows; the whole has not been used in anger.

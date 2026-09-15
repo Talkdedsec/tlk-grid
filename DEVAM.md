@@ -92,8 +92,13 @@ sürece uygulanamıyor; arayüz bunu yazıyor, taklit etmiyor.
 | `rcDestination` büyütüyor | Aynı yamada 1:1 ile 4× farklı görüntü veriyor |
 | Zoom matematiği | 38 test |
 
-Henüz **gerçek bir oyunla** doğrulanmadı: tuşun oyuna sızmaması (yutma) ve
-Alt-Tab nöbetçisinin sahada davranışı. İkisinin de birim testi var, saha testi yok.
+Tuşun yutulması artık **kanıtlandı** — `input_smoke` gerçek bir edit denetimi
+kurup `SendInput` ile içine yazıyor: bağlıyken `""`, bağlama başka pencereye
+bakarken `"k"`, bağlama yokken `"k"`. Son ikisi birincisi kadar önemli; her şeyi
+yutan bir hook ilk kontrolü de geçerdi.
+
+Hâlâ saha testi yok: Alt-Tab nöbetçisinin ve overlay'in bir maç boyunca
+davranışı denenmedi.
 
 **Faz 4 — kısmen bitti.** Katman motoru ve üstündeki üç modül çalışıyor.
 - `core/layers.rs` — tek iplikte N overlay penceresi. Mirror (canlı DWM kopyası,
@@ -119,15 +124,35 @@ kullanıcının seçtiği HUD katmanları (bölge seçici gerekiyor).
 | Ayarlar pencereleri açılıyor | Ekrandan yakalandı: dürbün penceresi Türkçe, anahtar/kaydırıcı/çift düğme ve durum satırı yerinde |
 | Durum yönetimi | Sayfalar açılışta komut çağırdığı için durum builder seviyesinde kaydedildi; "state not managed" hatası giderildi |
 
+## Profiller — bitti (Faz 7'den öne alındı)
+
+`core/profile.rs` şemayı ve **asıl zor kısmı** taşıyor: pencere tanıtıcısı
+yeniden başlatmadan sonra hiçbir şey ifade etmiyor. Kayıtlı kart bu yüzden
+*hangi* pencereyi istediğini anlatıyor — çalıştırılabilir dosya, başlık, kaçıncı
+kopya — ve yükleme anında canlı listeyle eşleştiriliyor. Eşleşme saf matematik,
+10 testi var.
+
+Sıra: önce çalıştırılabilir dosya (başlık haritayla, sunucuyla, yamayla değişir;
+`cs2.exe` değişmez), sonra başlık, sonra kopya numarası. Eşleşme kalitesi
+(`exact` / `same-title` / `same-process`) arayüze dönüyor ki zayıf eşleşme
+sessizce yanlış pencereye oturmasın.
+
+Oturum dosyası ayrı: kullanıcı çalışırken 400 ms gecikmeyle yazılıyor, açılışta
+okunup kartlar yeniden kuruluyor. Adlı profiller araç çubuğundaki ▼ / ▲
+düğmelerinden.
+
+**Canlı doğrulandı:** elle yazılan bir `session.json` (firefox.exe, 1920×540,
+kenarlıksız, sabitli, RMB'ye 2,5× bağlı) uygulama yeniden açıldığında hedefi
+`Netflix — Mozilla Firefox (firefox.exe)` olarak bulup kartı eksiksiz kurdu.
+
 ## Sırada
 
-1. **Gerçek bir oyunla uçtan uca test.** Hiçbir şey bir maç içinde denenmedi.
-   Tuşun oyuna sızmaması ve overlay'in oyun üstünde doğru durması sahada
-   doğrulanmadı.
-2. **Profiller (Faz 7'den öne alındı).** Şu an her açılışta hedef, bağlama,
-   katsayı ve yerleşim baştan kuruluyor. Demo dışına çıkmanın önündeki asıl engel bu.
-3. Faz 4'ün kalanı: çerçeve görselleri + HUD katmanları.
-4. Faz 5 CurveFX, Faz 6 SQUASH.
+1. **Gerçek bir oyunla uçtan uca test.** Parçalar tek tek gerçek pencerelere
+   karşı doğrulandı; bütün bir maç içinde kullanılmadı.
+2. Faz 4'ün kalanı: çerçeve görselleri (ART slotları hazır, arayüzü yok) +
+   HUD katmanları (bölge seçici gerekiyor).
+3. Faz 5 CurveFX, Faz 6 SQUASH.
+4. Faz 8: kılavuz penceresi, tanılama, ilk sürüm etiketi.
 
 ## Kaynak uygulamanın yama notlarından çıkanlar
 

@@ -89,6 +89,19 @@ const en = {
   "zoom.factorTitle": "Zoom factor, 0.01× to 64×",
   "status.factorSet": "Factor {factor}×.",
 
+  "profiles.hint":
+    "Everything on the cards is remembered as you work and comes back next time. Save under a name to keep more than one setup — a profile finds its windows again by executable, so it survives a restart.",
+  "profiles.namePlaceholder": "Profile name",
+  "profiles.save": "Save",
+  "profiles.none": "No saved profiles yet.",
+  "profiles.delete": "Delete",
+  "profiles.saved": "Saved as {name}.",
+  "profiles.loaded": "{name} loaded — {matched} of {total} window(s) found.",
+  "profiles.deleted": "{name} deleted.",
+  "profiles.needsName": "Give the profile a name first.",
+  "profiles.restored": "Picked up where you left off.",
+  "profiles.weakMatch": "{name}: matched by executable, the window title has changed.",
+
   "module.save": "SAVE & APPLY",
 
   "crosshair.title": "Your own reticle, dead centre",
@@ -236,6 +249,19 @@ const tr = {
   "zoom.factorTitle": "Büyütme katsayısı, 0,01× – 64×",
   "status.factorSet": "Katsayı {factor}×.",
 
+  "profiles.hint":
+    "Kartlardaki her şey sen çalışırken hatırlanır ve bir dahakine geri gelir. Birden fazla düzen tutmak için ada kaydet — profil pencerelerini çalıştırılabilir dosyadan bulur, yani yeniden başlatmayı atlatır.",
+  "profiles.namePlaceholder": "Profil adı",
+  "profiles.save": "Kaydet",
+  "profiles.none": "Henüz kayıtlı profil yok.",
+  "profiles.delete": "Sil",
+  "profiles.saved": "{name} olarak kaydedildi.",
+  "profiles.loaded": "{name} yüklendi — {total} pencereden {matched} tanesi bulundu.",
+  "profiles.deleted": "{name} silindi.",
+  "profiles.needsName": "Önce profile bir ad ver.",
+  "profiles.restored": "Kaldığın yerden devam.",
+  "profiles.weakMatch": "{name}: çalıştırılabilir dosyadan eşleşti, pencere başlığı değişmiş.",
+
   "module.save": "KAYDET & UYGULA",
 
   "crosshair.title": "Kendi nişangâhın, tam ortada",
@@ -333,6 +359,9 @@ export function translateDocument(root = document) {
   }
   for (const node of root.querySelectorAll("[data-i18n-aria]")) {
     node.setAttribute("aria-label", t(node.dataset.i18nAria));
+  }
+  for (const node of root.querySelectorAll("[data-i18n-placeholder]")) {
+    node.placeholder = t(node.dataset.i18nPlaceholder);
   }
 }
 

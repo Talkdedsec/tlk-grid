@@ -30,6 +30,10 @@ Açık kaynak, yalnız Windows. [English](README.md)
   pencereyi oynatır ve bırakınca geri koyar.
 - **Yerleşimi tutar** — pencereyi sabitlersen, oyun Alt-Tab sonrası geri
   oynattığında yerleşim yeniden dayatılır.
+- **Kaldığın yerden devam eder** — düzen sen çalışırken hatırlanır ve bir
+  dahaki açılışta geri gelir. Birden fazla düzen tutmak için ada kaydet. Profil
+  pencerelerini çalıştırılabilir dosyadan bulur; yeniden başlatmayı da, pencere
+  başlığının değişmesini de atlatır.
 - **Geri alır** — F8, tlk-grid'in dokunduğu her pencereyi eski stiline ve
   konumuna döndürür; her yerden çalışır.
 
@@ -79,7 +83,7 @@ cargo build --release           # target/release/tlk-grid.exe, tek dosya
 | 4 | Siyah bantlar, özel overlay'ler, nişangâh, dürbün lensi, HUD katmanları | sırada |
 | 5 | CurveFX: kavisli ekran, CRT, dört motion blur modu | |
 | 6 | SQUASH: NvAPI özel ekran modları | |
-| 7 | Profiller, hazır ayar kitaplığı, dil anahtarı | kısmen (dil bitti) |
+| 7 | Profiller, hazır ayar kitaplığı, dil anahtarı | kısmen (profiller ve dil bitti) |
 | 8 | Kılavuz, tanılama, yayın paketi | |
 
 ## Arayüz dili

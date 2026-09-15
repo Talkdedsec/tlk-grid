@@ -4,6 +4,7 @@ mod commands;
 mod hotkeys;
 mod locale;
 mod overlays;
+mod profiles;
 mod session;
 mod tray;
 
@@ -88,6 +89,12 @@ fn main() {
             commands::crosshair_state,
             commands::set_scope,
             commands::scope_state,
+            commands::save_profile,
+            commands::load_profile,
+            commands::list_profiles,
+            commands::delete_profile,
+            commands::remember_session,
+            commands::restore_session,
         ])
         .run(tauri::generate_context!())
         .expect("tlk-grid failed to start");
