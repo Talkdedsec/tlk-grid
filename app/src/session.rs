@@ -98,8 +98,6 @@ impl Session {
         }
     }
 
-    // ------------------------------------------------------------------ zoom
-
     pub fn set_zoom(&self, handle: isize, factor: f64, method: Method, border: Border) {
         let mut state = self.lock();
         let resting = state.zoom.get(&handle).and_then(|z| z.resting);
@@ -138,8 +136,6 @@ impl Session {
     pub fn unpark(&self, handle: isize) -> Option<Rect> {
         self.lock().zoom.get_mut(&handle)?.resting.take()
     }
-
-    // --------------------------------------------------------------- undoing
 
     pub fn release(&self, handle: isize) -> Option<OriginalState> {
         let mut state = self.lock();

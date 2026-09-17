@@ -86,8 +86,6 @@ impl Shared {
     }
 }
 
-// ---------------------------------------------------------------- public API
-
 pub struct Input {
     thread_id: u32,
 }
@@ -173,8 +171,6 @@ fn with_shared(edit: impl FnOnce(&mut Shared)) {
 fn read_shared<T>(read: impl FnOnce(&Shared) -> T) -> Option<T> {
     SHARED.get().and_then(|l| l.lock().ok()).map(|s| read(&s))
 }
-
-// -------------------------------------------------------- decision, no Win32
 
 /// Outcome of one raw trigger event. Split out from the hook so the rules can
 /// be tested without synthesising system input.
@@ -283,8 +279,6 @@ fn decide_wheel(shared: &Shared, notches: i32) -> Decision {
         },
     }
 }
-
-// --------------------------------------------------------------- Win32 layer
 
 #[cfg(windows)]
 mod imp {

@@ -45,7 +45,7 @@ function reportFailure(err) {
   }
 }
 
-/* ------------------------------------------------------------------ boot */
+/* boot */
 
 async function boot() {
   const gaps = missingKeys();
@@ -84,7 +84,7 @@ async function boot() {
   refreshProfileList();
 }
 
-/* --------------------------------------------------------------- toolbar */
+/* toolbar */
 
 function paintLanguageButton() {
   document.querySelector('[data-tool="lang"]').textContent = language().toUpperCase();
@@ -193,7 +193,7 @@ async function restoreEverything() {
   }
 }
 
-/* ------------------------------------------------------------------ card */
+/* card */
 
 function addWindowCard() {
   const el = cardTemplate.content.firstElementChild.cloneNode(true);
@@ -304,7 +304,7 @@ async function closeCard(card) {
   cards.splice(cards.indexOf(card), 1);
 }
 
-/* --------------------------------------------------------------- sources */
+/* sources */
 
 function fillMonitors(card) {
   const select = q(card, ".monitor-select");
@@ -399,7 +399,7 @@ async function readBackRect(card) {
   }
 }
 
-/* ---------------------------------------------------------------- layout */
+/* layout */
 
 async function selectDivisions(card, divisions) {
   card.divisions = card.divisions === divisions ? 0 : divisions;
@@ -460,7 +460,7 @@ async function applyCard(card) {
   }
 }
 
-/* --------------------------------------------------------------- preview */
+/* preview */
 
 /** Monitor pixels per preview pixel; the preview is always drawn to scale. */
 function previewScale(card) {
@@ -581,7 +581,7 @@ function localPoint(element, event) {
   return { x: event.clientX - box.left, y: event.clientY - box.top };
 }
 
-/* ----------------------------------------------------------------- binds */
+/* binds */
 
 function buildBinds(card) {
   const host = q(card, ".bind-rows");
@@ -804,7 +804,7 @@ function markEngaged(action, on) {
   }
 }
 
-/* --------------------------------------------------------------- profiles */
+/* profiles */
 
 let sessionTimer = null;
 

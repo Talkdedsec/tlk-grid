@@ -7,9 +7,17 @@ değiştirir.
 
 Açık kaynak, yalnız Windows. [English](README.md)
 
-> **Durum: erken.** Pencere keşfi, monitör tespiti, yerleşim, konumlandırma,
-> kısayollar ve büyütme çalışıyor. Katmanlar, CurveFX ve SQUASH aşağıdaki yol
-> haritasında; henüz derlemede yok.
+> ## Bu bir demo, sürüm değil
+>
+> Aşağıda anlatılan her şey çalışıyor ve testi var, ama **hiçbiri bir maç boyunca
+> kullanılmadı**. Parçalar tek tek gerçek pencerelere ve gerçek bir klavyeye karşı
+> doğrulandı; bütün denenmedi. Kurulum dosyası ve etiketli sürüm yok.
+>
+> Yaklaşımın ne yaptığını görmek için kullan. Önemli bir şeyin ortasında güvenme,
+> ve çevrimiçi kullanmadan önce anti-cheat notunu oku.
+>
+> Yapılacaklar: çerçeve çevresine özel görseller, kullanıcının seçtiği HUD
+> katmanları, kavisli ekran ve CRT efektleri, NVIDIA özel ekran modları.
 
 ## Ne yapar
 
@@ -63,6 +71,13 @@ oynatan programlara itiraz eder. Çevrimiçi kullanmadan önce oyunun kuralları
 - Desktop Window Manager açık bir GPU
 - WebView2 çalışma zamanı — Windows 10/11'de hazır gelir
 - Oyunun pencereli ya da kenarlıksız pencereli modda çalışıyor olması
+
+## Nasıl kurulu
+
+`docs/ARCHITECTURE.md` aracın tamamının dayandığı tek fikri, overlay ve hook
+kodunu biçimlendiren iki Windows tuzağını ve profilin neden pencere tanıtıcısı
+değil çalıştırılabilir dosya sakladığını anlatıyor. `core/` altında bir şey
+değiştirmeden önce okumaya değer.
 
 ## Derleme
 
