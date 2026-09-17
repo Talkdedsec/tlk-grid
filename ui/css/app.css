@@ -55,7 +55,7 @@ body {
 }
 .saved .drop:hover { color: var(--danger); }
 
-/* ---------- top bar ---------- */
+/* top bar */
 
 .topbar {
   display: flex;
@@ -116,7 +116,7 @@ body {
 .tool[data-tool="lang"] { width: auto; padding: 0 9px; letter-spacing: 0.08em; }
 .tool[data-tool="panic"] { color: var(--danger); border-color: var(--danger-soft); }
 
-/* ---------- canvas ---------- */
+/* canvas */
 
 .canvas {
   overflow: auto;
@@ -189,7 +189,7 @@ body {
 
 .card-body { overflow-y: auto; padding: 0 0 4px; }
 
-/* ---------- sections ---------- */
+/* sections */
 
 .section { padding: 13px 14px; border-bottom: 1px solid var(--line-soft); }
 .section:last-child { border-bottom: 0; }
@@ -283,7 +283,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
 .chip:hover { background: var(--chip-hover); }
 .chip[aria-pressed="true"] { border-color: var(--danger); color: #f0b7c3; background: #2a1a20; }
 
-/* ---------- preview ---------- */
+/* preview */
 
 .preview {
   position: relative;
@@ -333,7 +333,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
   pointer-events: none;
 }
 
-/* ---------- checkboxes ---------- */
+/* checkboxes */
 
 .check {
   display: flex;
@@ -352,7 +352,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
   cursor: pointer;
 }
 
-/* ---------- result + apply ---------- */
+/* result + apply */
 
 /* `display` on the base rule would beat the browser's [hidden] default. */
 .result[hidden] { display: none; }
@@ -389,7 +389,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
 .apply:hover { background: #16dea3; }
 .apply:disabled { background: #2b3138; color: var(--faint); cursor: default; }
 
-/* ---------- add card ---------- */
+/* add card */
 
 .add-card {
   flex: 0 0 200px;
@@ -413,7 +413,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
 .add-card:hover { border-color: var(--accent-soft); color: var(--accent-text); }
 .add-card .plus { font-size: 22px; line-height: 1; }
 
-/* ---------- status ---------- */
+/* status */
 
 .statusbar {
   display: flex;
@@ -433,7 +433,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
   .card, .add-card { flex: 0 0 auto; width: 100%; }
 }
 
-/* ---------- binds ---------- */
+/* binds */
 
 .bind {
   display: flex;
@@ -510,7 +510,7 @@ input:focus, select:focus { border-color: var(--accent-soft); }
   background: #2a1a20;
 }
 
-/* ---------- module windows ---------- */
+/* module windows */
 
 body.module {
   grid-template-rows: 42px 1fr var(--status-h);

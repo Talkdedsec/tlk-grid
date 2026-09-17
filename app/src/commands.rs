@@ -163,8 +163,6 @@ pub struct RestoreReport {
     pub failed: u32,
 }
 
-// ------------------------------------------------------------------- binds
-
 /// The bind field is armed. The next key or mouse button the hook sees is
 /// reported back as an `input` event and never reaches the focused app — which
 /// is the only way to capture M4/M5, since a webview keydown cannot see them.
@@ -219,8 +217,6 @@ pub fn key_name(vk: u32) -> String {
     key_label(vk)
 }
 
-// -------------------------------------------------------------------- zoom
-
 /// What the Resize bind will do for this window. Sent whenever the factor
 /// field, the method switch or the borderless box changes.
 #[tauri::command]
@@ -252,8 +248,6 @@ pub fn zoom_shortcuts() -> [f64; 3] {
 pub fn zoom_destination(base: Rect, factor: f64) -> Rect {
     zoom::destination(base, factor)
 }
-
-// -------------------------------------------------------------- crosshair
 
 /// Where a crosshair image is kept once chosen, so it survives a restart the
 /// way the guide promises.
@@ -371,8 +365,6 @@ pub fn crosshair_state(overlays: State<'_, Overlays>) -> CrosshairState {
     crosshair_state_of(&overlays)
 }
 
-// ------------------------------------------------------------------ scope
-
 #[derive(Serialize)]
 pub struct ScopeState {
     pub enabled: bool,
@@ -417,8 +409,6 @@ pub fn scope_state(overlays: State<'_, Overlays>) -> ScopeState {
         see_through: scope.backdrop == LensBackdrop::SeeThrough,
     }
 }
-
-// ---------------------------------------------------------------- profiles
 
 /// Saving is the whole point of a name: an empty one would overwrite the
 /// session file and silently take the user's working state with it.

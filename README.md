@@ -7,9 +7,18 @@ change size.
 
 Open source, Windows only. [Türkçe](README.tr.md)
 
-> **Status: early.** Window discovery, monitor detection, layout, placement,
-> hotkeys and zoom work. Overlays, CurveFX and SQUASH are on the roadmap below
-> and are not in the build yet.
+> ## This is a demo, not a release
+>
+> Everything described below works and is tested, but **nothing has been played
+> through a full match yet**. The pieces are verified individually against real
+> windows and a real keyboard; the whole has not been used in anger. There is no
+> installer and no tagged version.
+>
+> Use it to see what the approach does. Do not rely on it during something that
+> matters, and read the anti-cheat note before taking it online.
+>
+> Still to build: custom artwork around the letterbox, user-picked HUD layers,
+> the curved-screen and CRT effects, and NVIDIA custom display modes.
 
 ## What it does
 
@@ -64,6 +73,13 @@ how the move is done. Check your game's rules before using tlk-grid online.
 - A GPU with Desktop Window Manager enabled
 - WebView2 runtime — preinstalled on Windows 10/11
 - The game running in windowed or borderless windowed mode
+
+## How it is put together
+
+`docs/ARCHITECTURE.md` explains the one idea the whole tool rests on, the two
+Windows traps that shape the overlay and hook code, and why a profile stores a
+window's executable rather than its handle. Worth reading before changing
+anything under `core/`.
 
 ## Build
 

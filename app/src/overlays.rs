@@ -158,8 +158,6 @@ pub fn crosshair_bounds(monitor: Rect, image: (u32, u32), scale_percent: u32) ->
     Rect::new(0, 0, width, height).centered_in(monitor)
 }
 
-// ------------------------------------------------------------------ painting
-
 pub fn show_zoom(layers: &Layers, source: isize, monitor: Rect, destination: Rect) {
     layers.set(layers::ZOOM, Layer::mirror(source, monitor, destination));
 }
