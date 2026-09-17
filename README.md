@@ -1,5 +1,9 @@
 # tlk-grid
 
+[![ci](https://github.com/Talkdedsec/tlk-grid/actions/workflows/ci.yml/badge.svg)](https://github.com/Talkdedsec/tlk-grid/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-00cb91)](LICENSE)
+![windows only](https://img.shields.io/badge/windows-10%201903%2B-informational)
+
 Resize, position and zoom a game window without touching the game's internal
 rendering resolution. The picture gets bigger; the frame rate does not move,
 because nothing is re-rendered — only the window, and a live DWM copy of it,

@@ -1,5 +1,9 @@
 # tlk-grid
 
+[![ci](https://github.com/Talkdedsec/tlk-grid/actions/workflows/ci.yml/badge.svg)](https://github.com/Talkdedsec/tlk-grid/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-00cb91)](LICENSE)
+![windows only](https://img.shields.io/badge/windows-10%201903%2B-informational)
+
 Oyun penceresini, oyunun kendi render çözünürlüğüne dokunmadan boyutlandır,
 konumlandır ve büyüt. Görüntü büyür, FPS yerinde kalır — çünkü hiçbir şey
 yeniden render edilmez; sadece pencere ve pencerenin canlı DWM kopyası boyut
