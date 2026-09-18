@@ -25,14 +25,18 @@ jobs:
       - name: Build
         run: cargo build --release
 
-      - name: Name the binary after the tag
+      - name: Name the binary after the tag and checksum it
         shell: bash
         run: |
           version="${GITHUB_REF_NAME#v}"
-          cp target/release/tlk-grid.exe "tlk-grid-${version}-x64.exe"
+          exe="tlk-grid-${version}-x64.exe"
+          cp target/release/tlk-grid.exe "$exe"
+          sha256sum "$exe" | cut -d" " -f1 > "$exe.sha256"
 
       - uses: softprops/action-gh-release@v2
         with:
           draft: true
           generate_release_notes: true
-          files: tlk-grid-*-x64.exe
+          files: |
+            tlk-grid-*-x64.exe
+            tlk-grid-*-x64.exe.sha256

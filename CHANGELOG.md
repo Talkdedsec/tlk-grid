@@ -1,10 +1,11 @@
 # Changelog
 
 Notable changes, newest first. Dates are the day the work landed on `main`.
-Versions follow [Semantic Versioning](https://semver.org/); nothing is released
-yet, so everything below sits under Unreleased.
+Versions follow [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 0.1.0 — 2026-09-18
+
+First release. Read the known gaps at the bottom before installing.
 
 ### Added
 - Window discovery with HWND and process id, so two copies of the same game are
