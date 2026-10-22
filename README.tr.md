@@ -118,3 +118,7 @@ Varsayılan İngilizce; Türkçe bir Windows'ta Türkçe açılır. Araç çubu�
 bu depodaki her şey sıfırdan yazıldı.
 
 MIT lisansı. Bkz. [LICENSE](LICENSE).
+
+<p align="center">
+  <sub><a href="https://talkdedsec.com">Talkdedsec</a> tarafından yapıldı</sub>
+</p>
