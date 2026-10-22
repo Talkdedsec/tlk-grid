@@ -120,3 +120,7 @@ which is where this idea was worked out first. No code, asset or text from it
 is used here; everything in this repository was written from scratch.
 
 MIT licensed. See [LICENSE](LICENSE).
+
+<p align="center">
+  <sub>Built by <a href="https://talkdedsec.com">Talkdedsec</a></sub>
+</p>
